@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brahman Origins — University of Batangas Player Portal</title>
+  <meta name="description" content="Brahman Origins is an open-world educational game inspired by the student journey at the University of Batangas. Log in, track your progress, and play the official Unity WebGL game.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 42 42'%3E%3Crect width='42' height='42' rx='9' fill='%231a0509'/%3E%3Cpath d='M21 6 L34 11 V21 C34 30 28 35 21 37 C14 35 8 30 8 21 V11 Z' fill='none' stroke='%23c89b3c' stroke-width='2'/%3E%3Cpath d='M21 26 C17 22 14 22 12 25 M21 26 C25 22 28 22 30 25' fill='none' stroke='%23dab65e' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='21' cy='16' r='2.4' fill='%23c89b3c'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;0,900;1,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <svg class="brand-mark" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect width="42" height="42" rx="10" fill="#1a0509"/>
+          <path d="M21 6 L34 11 V21 C34 30 28 35 21 37 C14 35 8 30 8 21 V11 Z" stroke="#c89b3c" stroke-width="2"/>
+          <path d="M21 26 C17 22 14 22 12 25 M21 26 C25 22 28 22 30 25" stroke="#dab65e" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="21" cy="16" r="2.4" fill="#c89b3c"/>
+        </svg>
+        <span class="brand-text"><strong>Brahman Origins</strong><span>University of Batangas</span></span>
+      </a>
+
+      <nav aria-label="Primary">
+        <ul class="nav-links">
+          <li><a href="index.html" aria-current="page">Home</a></li>
+          <li><a href="index.html#about">About</a></li>
+          <li><a href="guidelines.html">How to Play</a></li>
+          <li><a href="index.html#leaderboard">Leaderboard</a></li>
+          <li><a href="login.html" class="nav-login">Login</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+<section class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-tag">
+        <span class="dot"></span>
+        A University of Batangas capstone project
+      </div>
+      
+      <h1>Brahman Origins</h1>
+      <p class="hero-subtitle">Your Journey. Your Campus. Your Story.</p>
+      
+      <p class="hero-desc">
+        Brahman Origins turns four stages of a UB education Elementary through College into an open-world adventure. Walk the real campuses, take on quests from mentors, and carry one growing character all the way to Commencement.
+      </p>
+      
+      <div class="hero-actions">
+        <a href="https://krunker.io/" class="btn btn-primary" data-play-game>Play the Game</a>
+      </div>
+      
+      <div class="hero-meta">
+        <div>
+          <strong>4</strong>
+          <span>Academic stages</span>
+        </div>
+        <div>
+          <strong>2</strong>
+          <span>UB campuses to explore</span>
+        </div>
+        <div>
+          <strong>1946</strong>
+          <span>The year UB was founded</span>
+        </div>
+        <div>
+          <strong>1</strong>
+          <span>Loyalty Award to earn</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+        <!-- Fixed: Explicit fill="none", stroke colors, and line parameters added -->
+        <path class="route" d="M60,430 C220,360 260,300 420,320 C580,340 600,260 760,270 C900,278 940,360 1120,330" fill="none" stroke="rgba(128, 0, 0, 0.2)" stroke-width="4" stroke-linecap="round"/>
+        <path class="route-draw" d="M60,430 C220,360 260,300 420,320 C580,340 600,260 760,270 C900,278 940,360 1120,330" fill="none" stroke="#800000" stroke-width="4" stroke-dasharray="8 8" stroke-linecap="round"/>
+        
+        <circle class="waypoint" cx="60" cy="430" r="7" fill="#800000" stroke="#ffffff" stroke-width="2"/>
+        <circle class="waypoint" cx="420" cy="320" r="7" fill="#800000" stroke="#ffffff" stroke-width="2"/>
+        <circle class="waypoint" cx="760" cy="270" r="7" fill="#800000" stroke="#ffffff" stroke-width="2"/>
+        <circle class="waypoint filled" cx="1120" cy="330" r="9" fill="#c89b3c" stroke="#800000" stroke-width="2"/>
+      </svg>
+    </section>
+
+    <!-- ================= ABOUT ================= -->
+    <section id="about">
+      <div class="container about-grid">
+        <div>
+          <span class="section-kicker">About Brahman Origins</span>
+          <h2>Every UBian's education, turned into a world worth exploring.</h2>
+          <p class="prose-measure" style="margin-top:20px;color:var(--text-secondary);font-size:1.05rem;">
+            Most of us only get to live our school years once, moving forward without a way back. Brahman Origins lets players replay that path as a game starting in Elementary, working through High School and Senior High, and arriving, quest by quest, at College. NPCs modeled on the mentors who shape a UB education hand out quests and minigames tied to real subjects, and everything you earn XP, achievements, event rewards stays with one character for the whole journey.
+          </p>
+          <p class="prose-measure" style="margin-top:16px;color:var(--text-secondary);font-size:1.05rem;">
+            The website you're looking at is the portal around that game: where players sign in, check their progress, and where administrators keep the world running.
+          </p>
+        </div>
+        <div class="about-stats">
+          <div><strong>4</strong><span>Academic stages recreated</span></div>
+          <div><strong>2</strong><span>UB campuses to explore</span></div>
+          <div><strong>1946</strong><span>Founding year of UB</span></div>
+          <div><strong>1</strong><span>Loyalty Award to earn</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= JOURNEY ================= -->
+    <section id="journey" class="section-alt">
+      <div class="container">
+        <div class="section-head">
+          <span class="section-kicker">The Academic Journey</span>
+          <h2>One long walk, four stages.</h2>
+          <p>Every player starts in the same place and follows the same road every UBian walks just with more NPCs and considerably more XP.</p>
+        </div>
+
+        <div class="journey-track">
+          <div class="journey-stage">
+            <div class="journey-num">1</div>
+            <h3>Elementary</h3>
+            <p>First steps on the UB Elementary Campus. Meet your earliest mentors and pick up the foundational quests everything else builds on.</p>
+            <span class="stage-status">Where every Brahman begins</span>
+          </div>
+          <div class="journey-stage">
+            <div class="journey-num">2</div>
+            <h3>High School</h3>
+            <p>Bigger campus, bigger cast of NPCs. Minigames start testing real subject skills instead of just the basics.</p>
+            <span class="stage-status">Skills start to specialize</span>
+          </div>
+          <div class="journey-stage">
+            <div class="journey-num">3</div>
+            <h3>Senior High School</h3>
+            <p>Players choose a track and take on quests written around it, mirroring the real SHS strand system.</p>
+            <span class="stage-status">Choose your track</span>
+          </div>
+          <div class="journey-stage is-current">
+            <div class="journey-num">4</div>
+            <h3>College</h3>
+            <p>The UB Millennium Campus opens up, quests get harder, and finishing this stage is what unlocks the Loyalty Award.</p>
+            <span class="stage-status">Where the Loyalty Award awaits</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FEATURES ================= -->
+    <section id="features">
+      <div class="container">
+        <div class="section-head center">
+          <h2>What there is to actually do</h2>
+          <p>Eight systems carry a player from their first quest to their last exam.</p>
+        </div>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9l-2 6-6 2 2-6z"/></svg></div>
+            <h3>Explore</h3>
+            <p>Walk 3D recreations of real UB campuses, from the Elementary grounds to the Millennium Campus.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8.5 11l2 2 4.5-4.5"/><path d="M8.5 16h7"/></svg></div>
+            <h3>Complete Quests</h3>
+            <p>Take on quest lines handed out by NPCs, each tied to a moment in academic life.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="9" rx="4"/><path d="M8 10.5v4M6 12.5h4"/><circle cx="15.5" cy="11.5" r="1"/><circle cx="18" cy="14" r="1"/></svg></div>
+            <h3>Educational Minigames</h3>
+            <p>Short, focused challenges that turn real coursework into something worth replaying.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></div>
+            <h3>Earn XP</h3>
+            <p>Quests, minigames, achievements, and events all feed one running total that never resets.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="5"/><path d="M9 11 6 3h3l3 6M15 11l3-8h-3l-3 6"/></svg></div>
+            <h3>Unlock Achievements</h3>
+            <p>Milestones you can actually show someone, complete with the date you earned them.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/><path d="M12 12l.8 1.6 1.8.2-1.3 1.2.3 1.8-1.6-.9-1.6.9.3-1.8-1.3-1.2 1.8-.2z"/></svg></div>
+            <h3>Join Events</h3>
+            <p>Seasonal, XP-boosted events scheduled by admins, timed to real dates on the calendar.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16"/><rect x="5" y="13" width="4" height="8"/><rect x="10" y="9" width="4" height="12"/><rect x="15" y="15" width="4" height="6"/></svg></div>
+            <h3>Climb the Leaderboard</h3>
+            <p>See where you rank against every other UBian on the same journey, by stage or campus.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4a4 4 0 01-8 0V4z"/><path d="M6 5H4v2a4 4 0 004 4M18 5h2v2a4 4 0 01-4 4"/><path d="M12 13v4M9 21h6M10 17h4v4h-4z"/></svg></div>
+            <h3>Earn the Loyalty Award</h3>
+            <p>The one reward that only goes to players who finish Elementary through College.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CAMPUS EXPERIENCE ================= -->
+    <section id="campus" class="section-alt">
+      <div class="container">
+        <div class="section-head">
+          <h2>Two campuses, rebuilt for the game</h2>
+          <p>Unity recreations of the places UB students already know, so the world feels like home instead of a generic map.</p>
+        </div>
+
+        <div class="campus-grid">
+          <article class="campus-card">
+            <div class="campus-art">
+              <span class="campus-tag">In development</span>
+              <svg viewBox="0 0 400 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+                <rect width="400" height="220" fill="none"/>
+                <path d="M0,170 L60,120 L100,150 L150,90 L200,140 L260,100 L320,150 L400,110 L400,220 L0,220 Z" fill="#350c17"/>
+                <path d="M0,200 L80,165 L140,190 L210,150 L280,185 L340,160 L400,180 L400,220 L0,220 Z" fill="#661626" opacity="0.8"/>
+                <rect x="120" y="150" width="28" height="44" fill="#c89b3c" opacity="0.75"/>
+                <rect x="160" y="130" width="22" height="64" fill="#dab65e" opacity="0.6"/>
+                <rect x="190" y="160" width="26" height="34" fill="#c89b3c" opacity="0.55"/>
+                <circle cx="330" cy="60" r="26" fill="#e9cf8e" opacity="0.18"/>
+              </svg>
+            </div>
+            <div class="campus-body">
+              <h3>UB Elementary Campus</h3>
+              <p>The starting zone — smaller in scale, built around the first quests and the NPCs every player meets before anyone else.</p>
+            </div>
+          </article>
+
+          <article class="campus-card">
+            <div class="campus-art">
+              <span class="campus-tag">In development</span>
+              <svg viewBox="0 0 400 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+                <rect width="400" height="220" fill="none"/>
+                <path d="M0,180 L50,140 L90,160 L140,100 L190,150 L240,90 L300,140 L360,95 L400,130 L400,220 L0,220 Z" fill="#350c17"/>
+                <rect x="60" y="150" width="24" height="50" fill="#c89b3c" opacity="0.7"/>
+                <rect x="95" y="120" width="26" height="80" fill="#dab65e" opacity="0.65"/>
+                <rect x="130" y="140" width="22" height="60" fill="#c89b3c" opacity="0.55"/>
+                <rect x="230" y="110" width="30" height="90" fill="#e9cf8e" opacity="0.4"/>
+                <rect x="270" y="150" width="20" height="50" fill="#c89b3c" opacity="0.6"/>
+              </svg>
+            </div>
+            <div class="campus-body">
+              <h3>UB Millennium Campus</h3>
+              <p>Home to the College stage the biggest map in the game, and the one that leads straight to the Loyalty Award.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= LOYALTY AWARD ================= -->
+    <section id="loyalty" class="loyalty-section">
+      <div class="container">
+        <div class="certificate">
+          <div class="certificate-inner">
+            <span class="section-kicker">The Loyalty Award</span>
+            <h2>The rarest badge in Brahman Origins.</h2>
+            <p>It isn't handed out for a single quest or a lucky minigame run. The Loyalty Award goes only to players who finish the full journey Elementary, High School, Senior High School, and College start to finish, on one account.</p>
+            <div class="certificate-actions">
+              <a href="guidelines.html" class="btn btn-primary">How to Earn It</a>
+              <a href="login.html" class="btn btn-outline">Log In to Track Progress</a>
+            </div>
+          </div>
+          <svg class="certificate-seal" viewBox="0 0 150 150" aria-hidden="true">
+            <circle cx="75" cy="75" r="60" fill="none" stroke="#a97c2b" stroke-width="2"/>
+            <circle cx="75" cy="75" r="50" fill="none" stroke="#c89b3c" stroke-width="1"/>
+            <path d="M75 30 L82 55 L108 55 L87 70 L95 95 L75 80 L55 95 L63 70 L42 55 L68 55 Z" fill="#c89b3c" opacity="0.85"/>
+            <path d="M75 135 L60 118 L90 118 Z" fill="#a97c2b"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= LEADERBOARD PREVIEW ================= -->
+    <section id="leaderboard" class="section-alt">
+      <div class="container">
+        <div class="section-head">
+          <h2>Top of the leaderboard this term</h2>
+          <p>Sample rankings shown below real standings populate once player progress is connected to the database.</p>
+        </div>
+
+        <div class="leaderboard-panel">
+          <div class="leaderboard-row head">
+            <span>Rank</span><span>Player</span><span>Stage</span><span>Level</span><span style="text-align:right;">XP</span>
+          </div>
+          <div class="leaderboard-row"><span class="lb-rank">1</span><span class="lb-player"><span class="lb-avatar"></span>Juan Dela Cruz</span><span class="lb-stage">College</span><span class="lb-level">Lv. 41</span><span class="lb-xp">15,280 XP</span></div>
+          <div class="leaderboard-row"><span class="lb-rank">2</span><span class="lb-player"><span class="lb-avatar"></span>Andrea Reyes</span><span class="lb-stage">College</span><span class="lb-level">Lv. 39</span><span class="lb-xp">14,050 XP</span></div>
+          <div class="leaderboard-row"><span class="lb-rank">3</span><span class="lb-player"><span class="lb-avatar"></span>Miguel Torres</span><span class="lb-stage">Senior High School</span><span class="lb-level">Lv. 33</span><span class="lb-xp">11,760 XP</span></div>
+          <div class="leaderboard-row"><span class="lb-rank">4</span><span class="lb-player"><span class="lb-avatar"></span>Maria Santos</span><span class="lb-stage">College</span><span class="lb-level">Lv. 31</span><span class="lb-xp">10,920 XP</span></div>
+          <div class="leaderboard-row"><span class="lb-rank">5</span><span class="lb-player"><span class="lb-avatar"></span>Ella Mercado</span><span class="lb-stage">High School</span><span class="lb-level">Lv. 28</span><span class="lb-xp">9,410 XP</span></div>
+          <div class="leaderboard-cta">
+            <p>Log in with your UB email to find exactly where you rank.</p>
+            <a href="login.html" class="btn btn-outline btn-sm">Log In</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CTA BANNER ================= -->
+    <section>
+      <div class="container">
+        <div class="cta-banner">
+          <h2>Ready to start your own journey?</h2>
+          <div class="cta-banner-actions">
+            <a href="#" class="btn btn-primary" data-play-game>Play the Game</a>
+            <a href="guidelines.html" class="btn btn-outline">How to Play</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href="index.html">
+            <svg class="brand-mark" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect width="42" height="42" rx="10" fill="#1a0509"/>
+              <path d="M21 6 L34 11 V21 C34 30 28 35 21 37 C14 35 8 30 8 21 V11 Z" stroke="#c89b3c" stroke-width="2"/>
+              <path d="M21 26 C17 22 14 22 12 25 M21 26 C25 22 28 22 30 25" stroke="#dab65e" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="21" cy="16" r="2.4" fill="#c89b3c"/>
+            </svg>
+            <span class="brand-text"><strong>Brahman Origins</strong><span>University of Batangas</span></span>
+          </a>
+          <p>A companion player portal for the Brahman Origins Unity WebGL game an open-world capstone project inspired by the UB student journey.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <a href="index.html#about">About</a>
+          <a href="index.html#journey">The Journey</a>
+          <a href="index.html#features">Game Features</a>
+          <a href="index.html#campus">Campuses</a>
+        </div>
+        <div class="footer-col">
+          <h4>Play</h4>
+          <a href="guidelines.html">How to Play</a>
+          <a href="index.html#leaderboard">Leaderboard</a>
+          <a href="index.html#loyalty">Loyalty Award</a>
+        </div>
+        <div class="footer-col">
+          <h4>Account</h4>
+          <a href="login.html">Login</a>
+          <a href="#" data-play-game>Play the Game</a>
+          <a href="https://ub.edu.ph" target="_blank" rel="noopener">University of Batangas</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Brahman Origins. A capstone project for the University of Batangas.</span>
+        <span>Website · Phase 1 visual build</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
