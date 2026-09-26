@@ -46,10 +46,107 @@
     });
   }
 
+  /* ---------- Dynamic Active Navigation Indicator ---------- */
+  const navAnchors = document.querySelectorAll(".nav-links a");
+
+  function updateActiveNav() {
+    if (!navAnchors.length) return;
+
+    // Identify current page filename
+    const path = window.location.pathname;
+    const currentPage = path.substring(path.lastIndexOf("/") + 1) || "index.html";
+
+    const clearActive = () => {
+      navAnchors.forEach((link) => {
+        link.removeAttribute("aria-current");
+        link.classList.remove("active");
+      });
+    };
+
+    // 1. Page Specific Matching for guidelines.html
+    if (currentPage.includes("guidelines.html")) {
+      clearActive();
+      navAnchors.forEach((link) => {
+        const href = link.getAttribute("href") || "";
+        if (href.includes("guidelines.html")) {
+          link.setAttribute("aria-current", "page");
+          link.classList.add("active");
+        }
+      });
+      return;
+    }
+
+    // 2. Page Specific Matching for login.html
+    if (currentPage.includes("login.html")) {
+      clearActive();
+      navAnchors.forEach((link) => {
+        const href = link.getAttribute("href") || "";
+        if (href.includes("login.html")) {
+          link.setAttribute("aria-current", "page");
+          link.classList.add("active");
+        }
+      });
+      return;
+    }
+
+    // 3. Section Scroll Spy for index.html
+    const aboutSection = document.querySelector("#about");
+    const leaderboardSection = document.querySelector("#leaderboard");
+
+    const scrollY = window.scrollY;
+    const header = document.querySelector(".site-header");
+    const headerOffset = header ? header.offsetHeight + 60 : 120;
+    const currentScrollPos = scrollY + headerOffset;
+
+    let activeKey = "home";
+
+    const aboutTop = aboutSection ? aboutSection.offsetTop : Infinity;
+    const leaderboardTop = leaderboardSection ? leaderboardSection.offsetTop : Infinity;
+
+    if (leaderboardSection && currentScrollPos >= leaderboardTop) {
+      activeKey = "leaderboard";
+    } else if (aboutSection && currentScrollPos >= aboutTop) {
+      activeKey = "about";
+    } else {
+      activeKey = "home";
+    }
+
+    clearActive();
+    navAnchors.forEach((link) => {
+      const href = link.getAttribute("href") || "";
+      let isMatch = false;
+
+      if (activeKey === "about" && href.includes("#about")) {
+        isMatch = true;
+      } else if (activeKey === "leaderboard" && href.includes("#leaderboard")) {
+        isMatch = true;
+      } else if (
+        activeKey === "home" &&
+        (href === "index.html" || href === "#" || href === "/" || href.endsWith("index.html"))
+      ) {
+        isMatch = true;
+      }
+
+      if (isMatch) {
+        link.setAttribute("aria-current", "page");
+        link.classList.add("active");
+      }
+    });
+  }
+
+  // Event Listeners
+  window.addEventListener("scroll", updateActiveNav, { passive: true });
+  window.addEventListener("resize", updateActiveNav, { passive: true });
+  document.addEventListener("DOMContentLoaded", updateActiveNav);
+
   /* ---------- Smooth Anchor Scrolling with Header Offset ---------- */
-  document.querySelectorAll('a[href^="#"]:not([href="#"])').forEach((anchor) => {
+  document.querySelectorAll('a[href*="#"]:not([href="#"])').forEach((anchor) => {
     anchor.addEventListener("click", function (e) {
-      const targetId = this.getAttribute("href");
+      const href = this.getAttribute("href");
+      const hashIndex = href.indexOf("#");
+      if (hashIndex === -1) return;
+
+      const targetId = href.substring(hashIndex);
       const targetEl = document.querySelector(targetId);
 
       if (targetEl) {
@@ -68,9 +165,7 @@
   });
 
   /* ---------- Toast Notification System ---------- */
-  // Unity WebGL build placeholder & UI notification feedback system
-  const GAME_URL = null; // Replace with e.g. "https://play.brahmanorigins.ub.edu.ph" when deployed
-
+  const GAME_URL = null; // Replace with WebGL deployment URL when live
   let toastTimeout = null;
 
   function showToast(message) {
@@ -90,7 +185,6 @@
       msgEl.textContent = message;
     }
 
-    // Double-frame delay ensures CSS transitions animate smoothly on fresh elements
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         toast.classList.add("show");
@@ -127,7 +221,6 @@
     const errorEl = loginForm.querySelector(".field-error");
 
     if (emailInput) {
-      // Clear error state dynamically as user types
       emailInput.addEventListener("input", () => {
         if (errorEl) {
           errorEl.classList.remove("show");

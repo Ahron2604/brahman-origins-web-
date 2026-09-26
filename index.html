@@ -1,51 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Brahman Origins — University of Batangas Player Portal</title>
-  <meta name="description" content="Brahman Origins is an open-world educational game inspired by the student journey at the University of Batangas. Log in, track your progress, and play the official Unity WebGL game.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 42 42'%3E%3Crect width='42' height='42' rx='9' fill='%231a0509'/%3E%3Cpath d='M21 6 L34 11 V21 C34 30 28 35 21 37 C14 35 8 30 8 21 V11 Z' fill='none' stroke='%23c89b3c' stroke-width='2'/%3E%3Cpath d='M21 26 C17 22 14 22 12 25 M21 26 C25 22 28 22 30 25' fill='none' stroke='%23dab65e' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='21' cy='16' r='2.4' fill='%23c89b3c'/%3E%3C/svg%3E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;0,900;1,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
 
   <header class="site-header">
-    <div class="container">
-      <a class="brand" href="index.html">
-        <svg class="brand-mark" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect width="42" height="42" rx="10" fill="#1a0509"/>
-          <path d="M21 6 L34 11 V21 C34 30 28 35 21 37 C14 35 8 30 8 21 V11 Z" stroke="#c89b3c" stroke-width="2"/>
-          <path d="M21 26 C17 22 14 22 12 25 M21 26 C25 22 28 22 30 25" stroke="#dab65e" stroke-width="2" stroke-linecap="round"/>
-          <circle cx="21" cy="16" r="2.4" fill="#c89b3c"/>
-        </svg>
-        <span class="brand-text"><strong>Brahman Origins</strong><span>University of Batangas</span></span>
-      </a>
+  <div class="container">
+    <a class="brand" href="index.html">
+      
+      <span class="brand-text"><strong>Brahman Origins</strong><span>University of Batangas</span></span>
+    </a>
 
-      <nav aria-label="Primary">
-        <ul class="nav-links">
-          <li><a href="index.html" aria-current="page">Home</a></li>
-          <li><a href="index.html#about">About</a></li>
-          <li><a href="guidelines.html">How to Play</a></li>
-          <li><a href="index.html#leaderboard">Leaderboard</a></li>
-          <li><a href="login.html" class="nav-login">Login</a></li>
-        </ul>
-      </nav>
+    <nav aria-label="Primary">
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html#about">About</a></li>
+        <li><a href="guidelines.html">How to Play</a></li>
+        <li><a href="index.html#leaderboard">Leaderboard</a></li>
+        <li><a href="login.html" class="nav-login">Login</a></li>
+      </ul>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+      </button>
     </div>
-  </header>
+  </div>
+</header>
 
   <main id="main">
 <section class="hero">
   <div class="container">
     <div class="hero-inner">
-      <div class="hero-tag">
-        <span class="dot"></span>
-        A University of Batangas capstone project
-      </div>
+      
       
       <h1>Brahman Origins</h1>
       <p class="hero-subtitle">Your Journey. Your Campus. Your Story.</p>
@@ -64,7 +54,7 @@
           <span>Academic stages</span>
         </div>
         <div>
-          <strong>2</strong>
+          <strong>4</strong>
           <span>UB campuses to explore</span>
         </div>
         <div>
@@ -79,17 +69,7 @@
     </div>
   </div>
 </section>
-        <!-- Fixed: Explicit fill="none", stroke colors, and line parameters added -->
-        <path class="route" d="M60,430 C220,360 260,300 420,320 C580,340 600,260 760,270 C900,278 940,360 1120,330" fill="none" stroke="rgba(128, 0, 0, 0.2)" stroke-width="4" stroke-linecap="round"/>
-        <path class="route-draw" d="M60,430 C220,360 260,300 420,320 C580,340 600,260 760,270 C900,278 940,360 1120,330" fill="none" stroke="#800000" stroke-width="4" stroke-dasharray="8 8" stroke-linecap="round"/>
-        
-        <circle class="waypoint" cx="60" cy="430" r="7" fill="#800000" stroke="#ffffff" stroke-width="2"/>
-        <circle class="waypoint" cx="420" cy="320" r="7" fill="#800000" stroke="#ffffff" stroke-width="2"/>
-        <circle class="waypoint" cx="760" cy="270" r="7" fill="#800000" stroke="#ffffff" stroke-width="2"/>
-        <circle class="waypoint filled" cx="1120" cy="330" r="9" fill="#c89b3c" stroke="#800000" stroke-width="2"/>
-      </svg>
-    </section>
-
+        <section id="home" class="hero"></section>
     <!-- ================= ABOUT ================= -->
     <section id="about">
       <div class="container about-grid">
@@ -284,21 +264,28 @@
           <p>Sample rankings shown below real standings populate once player progress is connected to the database.</p>
         </div>
 
-        <div class="leaderboard-panel">
-          <div class="leaderboard-row head">
-            <span>Rank</span><span>Player</span><span>Stage</span><span>Level</span><span style="text-align:right;">XP</span>
-          </div>
-          <div class="leaderboard-row"><span class="lb-rank">1</span><span class="lb-player"><span class="lb-avatar"></span>Juan Dela Cruz</span><span class="lb-stage">College</span><span class="lb-level">Lv. 41</span><span class="lb-xp">15,280 XP</span></div>
-          <div class="leaderboard-row"><span class="lb-rank">2</span><span class="lb-player"><span class="lb-avatar"></span>Andrea Reyes</span><span class="lb-stage">College</span><span class="lb-level">Lv. 39</span><span class="lb-xp">14,050 XP</span></div>
-          <div class="leaderboard-row"><span class="lb-rank">3</span><span class="lb-player"><span class="lb-avatar"></span>Miguel Torres</span><span class="lb-stage">Senior High School</span><span class="lb-level">Lv. 33</span><span class="lb-xp">11,760 XP</span></div>
-          <div class="leaderboard-row"><span class="lb-rank">4</span><span class="lb-player"><span class="lb-avatar"></span>Maria Santos</span><span class="lb-stage">College</span><span class="lb-level">Lv. 31</span><span class="lb-xp">10,920 XP</span></div>
-          <div class="leaderboard-row"><span class="lb-rank">5</span><span class="lb-player"><span class="lb-avatar"></span>Ella Mercado</span><span class="lb-stage">High School</span><span class="lb-level">Lv. 28</span><span class="lb-xp">9,410 XP</span></div>
-          <div class="leaderboard-cta">
-            <p>Log in with your UB email to find exactly where you rank.</p>
-            <a href="login.html" class="btn btn-outline btn-sm">Log In</a>
-          </div>
-        </div>
-      </div>
+        <div class="leaderboard-card">
+  <table class="leaderboard-table">
+    <thead>
+      <tr>
+        <th>RANK</th>
+        <th>PLAYER</th>
+        <th>STAGE</th>
+        <th>LEVEL</th>
+        <th>XP</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Table Rows Here -->
+    </tbody>
+  </table>
+
+  <!-- Leaderboard Footer Bar -->
+  <div class="leaderboard-footer">
+    <p>Log in with your UB email to find exactly where you rank.</p>
+    <a href="login.html" class="btn-login">LOG IN</a>
+  </div>
+</div>
     </section>
 
     <!-- ================= CTA BANNER ================= -->
