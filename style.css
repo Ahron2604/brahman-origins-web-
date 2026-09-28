@@ -253,7 +253,7 @@ p { color: var(--text-secondary); }
 .brand-text strong { 
   font-family: var(--font-display); 
   font-size: 1.15rem; 
-  color: #ffffff; 
+  color: var(--gold-400); 
   letter-spacing: -0.02em;
 }
 
@@ -642,60 +642,195 @@ section:nth-of-type(odd) {
 /* ---------- Login Page Styling ---------- */
 .login-shell {
   min-height: calc(100vh - var(--header-h));
-  display: flex; align-items: center; justify-content: center;
-  padding: 40px 24px; background: var(--bg-light-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(212, 175, 55, 0.08), transparent 28%),
+    radial-gradient(circle at 85% 80%, rgba(128, 0, 0, 0.06), transparent 30%),
+    var(--bg-light-gray);
 }
 
 .login-card {
-  width: 100%; max-width: 420px; background: var(--bg-white);
-  border: 1px solid var(--border-color); border-radius: var(--radius-lg);
-  padding: 36px 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 44px 40px 38px;
+  box-shadow: 0 12px 35px rgba(55, 18, 23, 0.08);
 }
 
-.field { margin-bottom: 16px; }
-.field label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+/* Login Logo / Brand */
+.login-card > .brand {
+  margin-bottom: 30px;
+  justify-content: center;
+}
+
+.login-card .brand-mark {
+  width: 48px;
+  height: 48px;
+}
+
+.login-card .brand-text strong {
+  font-size: 1.2rem;
+}
+
+.login-card .brand-text span {
+  font-size: 0.67rem;
+}
+
+/* Login Heading */
+.login-card h2 {
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: clamp(1.7rem, 3vw, 2.1rem);
+}
+
+.login-card .lede {
+  text-align: center;
+  margin-bottom: 32px;
+  font-size: 0.95rem;
+}
+
+/* Form Fields */
+.field {
+  margin-bottom: 22px;
+}
+
+.field label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
 .field input {
-  width: 100%; padding: 10px 14px; border-radius: 8px;
-  border: 1px solid var(--border-color); background: var(--bg-white);
-  color: var(--text-primary); font-size: 0.95rem; transition: border-color 0.2s ease;
-}
-.field input:focus { outline: none; border-color: var(--maroon-primary); }
-
-/* ---------- Site Footer ---------- */
-.site-footer { 
-  background: #36000b; 
-  border-top: 4px solid var(--gold-400); 
-  color: rgba(255, 255, 255, 0.8);
-  padding: 60px 0 28px; 
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-white);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.footer-grid { 
-  display: grid; 
-  grid-template-columns: 1.4fr 1fr 1fr 1fr; 
-  gap: 32px; 
-  padding-bottom: 40px; 
+.field input::placeholder {
+  color: #aaa1a3;
 }
 
-.footer-brand p { font-size: 0.88rem; margin-top: 12px; color: rgba(255, 255, 255, 0.6); }
-.footer-col h4 { font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold-400); margin-bottom: 14px; }
-.footer-col a { display: block; text-decoration: none; color: rgba(255, 255, 255, 0.7); font-size: 0.88rem; padding: 4px 0; transition: color 0.2s ease; }
-.footer-col a:hover { color: var(--gold-400); }
-
-.footer-bottom {
-  display: flex; justify-content: space-between; align-items: center; 
-  padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 0.8rem; color: rgba(255, 255, 255, 0.5);
+.field input:focus {
+  outline: none;
+  border-color: var(--maroon-primary);
+  box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.08);
 }
 
-/* ---------- Responsive Breakpoints ---------- */
-@media (max-width: 860px) {
-  .about-grid, .campus-grid, .footer-grid { grid-template-columns: 1fr; }
-  .journey-track { grid-template-columns: 1fr; }
+.field-error {
+  margin-top: 7px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--error-color);
 }
 
-@media (max-width: 700px) {
-  .hero, .page-banner { padding-top: 68px; padding-bottom: 70px; }
-  .hero-meta div { border-right: 0; min-width: 42%; }
-  .feature-grid { grid-template-columns: 1fr; }
-  .step-row { flex-direction: column; gap: 12px; }
+/* Login Button */
+.login-card form .btn-block {
+  margin-top: 6px;
+  min-height: 48px;
+}
+
+/* Divider */
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 28px 0 22px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
+}
+
+/* Gmail Button */
+#ub-gmail-btn {
+  min-height: 48px;
+}
+
+/* UB Account Notice */
+.login-domain-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 26px;
+  padding: 16px;
+  background: var(--gold-100);
+  border: 1px solid rgba(184, 137, 29, 0.22);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.login-domain-note > span:first-child {
+  flex-shrink: 0;
+  font-size: 1rem;
+  margin-top: 1px;
+}
+
+.login-domain-note strong {
+  color: var(--maroon-primary);
+}
+
+/* Bottom Link */
+.login-foot {
+  text-align: center;
+  margin-top: 28px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.login-foot a {
+  color: var(--maroon-primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.login-foot a:hover {
+  color: var(--gold-500);
+  text-decoration: underline;
+}
+
+/* Mobile Login */
+@media (max-width: 520px) {
+  .login-shell {
+    padding: 40px 16px;
+  }
+
+  .login-card {
+    padding: 34px 22px 30px;
+    border-radius: 18px;
+  }
+
+  .login-card > .brand {
+    margin-bottom: 26px;
+  }
+
+  .login-card h2 {
+    font-size: 1.65rem;
+  }
+
+  .login-card .lede {
+    margin-bottom: 28px;
+  }
 }
