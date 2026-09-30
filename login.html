@@ -1,88 +1,289 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Login | Brahman Origins</title>
+
   <link rel="stylesheet" href="style.css">
+
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
+
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
 
+  <!-- ================= HEADER ================= -->
   <header class="site-header">
     <div class="container">
+
       <a class="brand" href="index.html">
-        <svg class="brand-mark" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <svg
+          class="brand-mark"
+          viewBox="0 0 42 42"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
           <rect width="42" height="42" rx="10" fill="#1a0509"/>
-          <path d="M21 6 L34 11 V21 C34 30 28 35 21 37 C14 35 8 30 8 21 V11 Z" stroke="#c89b3c" stroke-width="2"/>
-          <path d="M21 26 C17 22 14 22 12 25 M21 26 C25 22 28 22 30 25" stroke="#dab65e" stroke-width="2" stroke-linecap="round"/>
-          <circle cx="21" cy="16" r="2.4" fill="#c89b3c"/>
+
+          <path
+            d="M21 6 L34 11 V21 C34 30 28 35 21 37 C14 35 8 30 8 21 V11 Z"
+            stroke="#c89b3c"
+            stroke-width="2"
+          />
+
+          <path
+            d="M21 26 C17 22 14 22 12 25 M21 26 C25 22 28 22 30 25"
+            stroke="#dab65e"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+
+          <circle
+            cx="21"
+            cy="16"
+            r="2.4"
+            fill="#c89b3c"
+          />
         </svg>
-        <span class="brand-text"><strong>Brahman Origins</strong><span>University of Batangas</span></span>
+
+        <span class="brand-text">
+          <strong>Brahman Origins</strong>
+          <span>University of Batangas</span>
+        </span>
       </a>
 
       <nav aria-label="Primary">
         <ul class="nav-links">
-          <li><a href="index.html">Home</a></li>
-          <li><a href="index.html#about">About</a></li>
-          <li><a href="guidelines.html">How to Play</a></li>
-          <li><a href="index.html#leaderboard">Leaderboard</a></li>
-          <li><a href="login.html" class="nav-login" aria-current="page">Login</a></li>
+          <li>
+            <a href="index.html">Home</a>
+          </li>
+
+          <li>
+            <a href="index.html#about">About</a>
+          </li>
+
+          <li>
+            <a href="guidelines.html">How to Play</a>
+          </li>
+
+          <li>
+            <a href="index.html#leaderboard">Leaderboard</a>
+          </li>
+
+          <li>
+            <a href="login.html" class="nav-login" aria-current="page">
+              Login
+            </a>
+          </li>
         </ul>
       </nav>
 
       <div class="nav-actions">
-        <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        <button
+          class="nav-toggle"
+          aria-label="Toggle menu"
+          aria-expanded="false"
+          type="button"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          >
+            <path d="M4 7h16"/>
+            <path d="M4 12h16"/>
+            <path d="M4 17h16"/>
+          </svg>
         </button>
       </div>
+
     </div>
   </header>
 
+
+  <!-- ================= MAIN ================= -->
   <main id="main">
+
     <section class="login-shell">
+
       <div class="login-card">
-        <a class="brand" href="index.html">
-          <svg class="brand-mark" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <rect width="42" height="42" rx="10" fill="#1a0509"/>
-            <path d="M21 6 L34 11 V21 C34 30 28 35 21 37 C14 35 8 30 8 21 V11 Z" stroke="#c89b3c" stroke-width="2"/>
-            <path d="M21 26 C17 22 14 22 12 25 M21 26 C25 22 28 22 30 25" stroke="#dab65e" stroke-width="2" stroke-linecap="round"/>
-            <circle cx="21" cy="16" r="2.4" fill="#c89b3c"/>
+
+        <!-- Login Brand
+             This is intentionally NOT clickable. -->
+        <div class="brand">
+
+          <svg
+            class="brand-mark"
+            viewBox="0 0 42 42"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <rect
+              width="42"
+              height="42"
+              rx="10"
+              fill="#1a0509"
+            />
+
+            <path
+              d="M21 6 L34 11 V21 C34 30 28 35 21 37 C14 35 8 30 8 21 V11 Z"
+              stroke="#c89b3c"
+              stroke-width="2"
+            />
+
+            <path
+              d="M21 26 C17 22 14 22 12 25 M21 26 C25 22 28 22 30 25"
+              stroke="#dab65e"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+
+            <circle
+              cx="21"
+              cy="16"
+              r="2.4"
+              fill="#c89b3c"
+            />
           </svg>
-          <span class="brand-text"><strong>Brahman Origins</strong><span>University of Batangas</span></span>
-        </a>
 
-        <h1>Welcome back, UBian</h1>
-        
+          <span class="brand-text">
+            <strong>Brahman Origins</strong>
+            <span>University of Batangas</span>
+          </span>
 
-        <form id="login-form" novalidate>
-          <div class="field">
-            <label for="email">Email Address</label>
-            <input type="email" id="email" name="email" placeholder="juan.delacruz@ub.edu.ph" autocomplete="username" required>
-            <p class="field-error">Please use your email address.</p>
-          </div>
-          <div class="field">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
-          </div>
-          <button type="submit" class="btn btn-primary btn-block">Log In</button>
-        </form>
-
-        <div class="login-divider">or</div>
-        <button type="button" class="btn btn-outline btn-block" id="ub-gmail-btn">Continue with UB Gmail</button>
-
-        <div class="login-domain-note">
-          <span aria-hidden="true">🎓</span>
-          <span><strong>UB accounts only.</strong> Player features are reserved for verified <strong>@ub.edu.ph</strong> addresses personal Gmail accounts can browse the site but can't access the game.</span>
         </div>
 
-        <p class="login-foot">Just here to look around? <a href="index.html">Back to the homepage</a></p>
+
+        <!-- Heading -->
+        <h2>Welcome back, UBian</h2>
+
+        <p class="lede">
+          Continue your Brahman Origins journey.
+        </p>
+
+
+        <!-- ================= EMAIL LOGIN ================= -->
+        <form id="login-form" novalidate>
+
+          <div class="field">
+
+            <label for="email">
+              Email Address
+            </label>
+
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="juan.delacruz@ub.edu.ph"
+              autocomplete="username"
+              required
+            >
+
+            <p
+              class="field-error"
+              id="email-error"
+              style="display: none;"
+            >
+              Please enter a valid University of Batangas email address or Gmail account.
+            </p>
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="password">
+              Password
+            </label>
+
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              required
+            >
+
+          </div>
+
+
+          <button
+            type="submit"
+            class="btn btn-primary btn-block"
+          >
+            Log In
+          </button>
+
+        </form>
+
+
+        <!-- ================= DIVIDER ================= -->
+        <div class="login-divider">
+          <span>or</span>
+        </div>
+
+
+        <!-- ================= GOOGLE SIGN IN ================= -->
+        <div class="google-login-section">
+
+          <div
+            id="google-signin"
+            class="google-signin"
+          ></div>
+
+          <p
+            id="google-login-error"
+            class="field-error"
+            style="display: none;"
+          ></p>
+
+        </div>
+
+
+        <!-- ================= UB ACCOUNT NOTICE ================= -->
+        <div class="login-domain-note">
+
+          <span aria-hidden="true">🔒</span>
+
+          <span>
+            <strong>UB accounts only.</strong>
+            Player features are reserved for verified
+            <strong>@ub.edu.ph</strong> accounts.
+            Personal Gmail accounts can browse the site but
+            cannot access the game.
+          </span>
+
+        </div>
+
+
+        <!-- ================= BOTTOM LINK ================= -->
+        <p class="login-foot">
+          Just here to look around?
+          <a href="index.html">
+            Back to the homepage
+          </a>
+        </p>
+
       </div>
+
     </section>
+
   </main>
 
-  <script src="js/main.js"></script>
-  <script>
-    document.getElementById('ub-gmail-btn')?.addEventListener('click', function () {
-      document.getElementById('login-form').requestSubmit();
-    });
-  </script>
+
+  <!-- Main JavaScript -->
+  <script src="main.js"></script>
+
 </body>
 </html>
