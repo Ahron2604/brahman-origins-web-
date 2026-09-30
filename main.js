@@ -1,12 +1,15 @@
 /* ==========================================================================
-   BRAHMAN ORIGINS — Player Portal Script (main.js)
+   BRAHMAN ORIGINS — Player Portal & Admin Script (main.js)
    University of Batangas · Capstone Companion Site
    ========================================================================== */
 
 (function () {
   "use strict";
 
-  /* ---------- Mobile Navigation ---------- */
+  // Configuration
+  const GAME_URL = null; // Set to Unity WebGL build URL when deployed
+
+  /* ---------- 1. Mobile Navigation Toggle ---------- */
   const navToggle = document.querySelector(".nav-toggle");
   const navLinks = document.querySelector(".nav-links");
 
@@ -15,21 +18,17 @@
       const isOpen = open !== undefined ? open : !document.body.classList.contains("nav-open");
       document.body.classList.toggle("nav-open", isOpen);
       navToggle.setAttribute("aria-expanded", String(isOpen));
-      
-      // Prevent background scrolling while mobile navigation is open
       document.body.style.overflow = isOpen ? "hidden" : "";
     };
 
     navToggle.addEventListener("click", () => toggleMenu());
 
-    // Close mobile menu when clicking navigation links
     if (navLinks) {
       navLinks.querySelectorAll("a").forEach((link) => {
         link.addEventListener("click", () => toggleMenu(false));
       });
     }
 
-    // Close menu on Escape key press
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && document.body.classList.contains("nav-open")) {
         toggleMenu(false);
@@ -37,7 +36,6 @@
       }
     });
 
-    // Close menu when clicking outside header
     document.addEventListener("click", (e) => {
       const header = document.querySelector(".site-header");
       if (document.body.classList.contains("nav-open") && header && !header.contains(e.target)) {
@@ -46,13 +44,12 @@
     });
   }
 
-  /* ---------- Dynamic Active Navigation Indicator ---------- */
+  /* ---------- 2. Dynamic ScrollSpy & Nav Highlighting ---------- */
   const navAnchors = document.querySelectorAll(".nav-links a");
 
   function updateActiveNav() {
     if (!navAnchors.length) return;
 
-    // Identify current page filename
     const path = window.location.pathname;
     const currentPage = path.substring(path.lastIndexOf("/") + 1) || "index.html";
 
@@ -63,12 +60,10 @@
       });
     };
 
-    // 1. Page Specific Matching for guidelines.html
     if (currentPage.includes("guidelines.html")) {
       clearActive();
       navAnchors.forEach((link) => {
-        const href = link.getAttribute("href") || "";
-        if (href.includes("guidelines.html")) {
+        if ((link.getAttribute("href") || "").includes("guidelines.html")) {
           link.setAttribute("aria-current", "page");
           link.classList.add("active");
         }
@@ -76,12 +71,10 @@
       return;
     }
 
-    // 2. Page Specific Matching for login.html
     if (currentPage.includes("login.html")) {
       clearActive();
       navAnchors.forEach((link) => {
-        const href = link.getAttribute("href") || "";
-        if (href.includes("login.html")) {
+        if ((link.getAttribute("href") || "").includes("login.html")) {
           link.setAttribute("aria-current", "page");
           link.classList.add("active");
         }
@@ -89,7 +82,7 @@
       return;
     }
 
-    // 3. Section Scroll Spy for index.html
+    // ScrollSpy for index.html sections
     const aboutSection = document.querySelector("#about");
     const leaderboardSection = document.querySelector("#leaderboard");
 
@@ -99,7 +92,6 @@
     const currentScrollPos = scrollY + headerOffset;
 
     let activeKey = "home";
-
     const aboutTop = aboutSection ? aboutSection.offsetTop : Infinity;
     const leaderboardTop = leaderboardSection ? leaderboardSection.offsetTop : Infinity;
 
@@ -107,8 +99,6 @@
       activeKey = "leaderboard";
     } else if (aboutSection && currentScrollPos >= aboutTop) {
       activeKey = "about";
-    } else {
-      activeKey = "home";
     }
 
     clearActive();
@@ -116,14 +106,9 @@
       const href = link.getAttribute("href") || "";
       let isMatch = false;
 
-      if (activeKey === "about" && href.includes("#about")) {
-        isMatch = true;
-      } else if (activeKey === "leaderboard" && href.includes("#leaderboard")) {
-        isMatch = true;
-      } else if (
-        activeKey === "home" &&
-        (href === "index.html" || href === "#" || href === "/" || href.endsWith("index.html"))
-      ) {
+      if (activeKey === "about" && href.includes("#about")) isMatch = true;
+      else if (activeKey === "leaderboard" && href.includes("#leaderboard")) isMatch = true;
+      else if (activeKey === "home" && (href === "index.html" || href === "#" || href === "/" || href.endsWith("index.html"))) {
         isMatch = true;
       }
 
@@ -134,12 +119,11 @@
     });
   }
 
-  // Event Listeners
   window.addEventListener("scroll", updateActiveNav, { passive: true });
   window.addEventListener("resize", updateActiveNav, { passive: true });
   document.addEventListener("DOMContentLoaded", updateActiveNav);
 
-  /* ---------- Smooth Anchor Scrolling with Header Offset ---------- */
+  /* ---------- 3. Smooth Anchor Scrolling ---------- */
   document.querySelectorAll('a[href*="#"]:not([href="#"])').forEach((anchor) => {
     anchor.addEventListener("click", function (e) {
       const href = this.getAttribute("href");
@@ -154,18 +138,15 @@
         const header = document.querySelector(".site-header");
         const headerOffset = header ? header.offsetHeight : 0;
         const elementPosition = targetEl.getBoundingClientRect().top + window.pageYOffset;
-        const offsetPosition = elementPosition - headerOffset;
-
         window.scrollTo({
-          top: offsetPosition,
+          top: elementPosition - headerOffset,
           behavior: "smooth"
         });
       }
     });
   });
 
-  /* ---------- Toast Notification System ---------- */
-  const GAME_URL = null; // Replace with WebGL deployment URL when live
+  /* ---------- 4. Toast Notification System ---------- */
   let toastTimeout = null;
 
   function showToast(message) {
@@ -181,40 +162,64 @@
     }
 
     const msgEl = toast.querySelector(".toast-msg");
-    if (msgEl) {
-      msgEl.textContent = message;
-    }
+    if (msgEl) msgEl.textContent = message;
 
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        toast.classList.add("show");
-      });
+      requestAnimationFrame(() => toast.classList.add("show"));
     });
 
-    if (toastTimeout) {
-      clearTimeout(toastTimeout);
-    }
-
-    toastTimeout = setTimeout(() => {
-      toast.classList.remove("show");
-    }, 3800);
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => toast.classList.remove("show"), 3800);
   }
 
-  // Intercept "Play the Game" buttons when WebGL build is offline
+  /* ---------- 5. Populate Dynamic Leaderboard Table ---------- */
+  const mockLeaderboardData = [
+    { rank: "#01", name: "Miguel Santos", initials: "MS", stage: "College (BSIT)", level: 42, xp: "18,940 XP" },
+    { rank: "#02", name: "Alyssa Reyes", initials: "AR", stage: "College (BSCS)", level: 39, xp: "16,820 XP" },
+    { rank: "#03", name: "Christian Cruz", initials: "CC", stage: "Senior High (STEM)", level: 35, xp: "14,500 XP" },
+    { rank: "#04", name: "Kai Alvarado", initials: "KA", stage: "College (BSIT)", level: 24, xp: "12,420 XP" },
+    { rank: "#05", name: "Bea Dimaculangan", initials: "BD", stage: "High School", level: 19, xp: "9,180 XP" }
+  ];
+
+  function renderLeaderboard() {
+    const tbody = document.querySelector(".leaderboard-table tbody");
+    if (!tbody) return;
+
+    tbody.innerHTML = mockLeaderboardData
+      .map(
+        (row) => `
+      <tr>
+        <td class="lb-rank"><strong>${row.rank}</strong></td>
+        <td>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="lb-avatar">${row.initials}</span>
+            <strong>${row.name}</strong>
+          </div>
+        </td>
+        <td><span class="stage-pill">${row.stage}</span></td>
+        <td><strong>LVL ${row.level}</strong></td>
+        <td class="lb-xp">${row.xp}</td>
+      </tr>
+    `
+      )
+      .join("");
+  }
+
+  document.addEventListener("DOMContentLoaded", renderLeaderboard);
+
+  /* ---------- 6. Play Game Button & Modal Handler ---------- */
   document.querySelectorAll("[data-play-game]").forEach((btn) => {
     btn.addEventListener("click", (e) => {
+      e.preventDefault();
       if (!GAME_URL) {
-        e.preventDefault();
         showToast("The Unity WebGL build isn't deployed yet — check back soon, UBian!");
       } else {
-        btn.setAttribute("href", GAME_URL);
-        btn.setAttribute("target", "_blank");
-        btn.setAttribute("rel", "noopener noreferrer");
+        window.open(GAME_URL, "_blank", "noopener,noreferrer");
       }
     });
   });
 
-  /* ---------- Login Form Demo Handler ---------- */
+  /* ---------- 7. Login Form UB Email Handler ---------- */
   const loginForm = document.querySelector("#login-form");
   if (loginForm) {
     const emailInput = loginForm.querySelector("#email");
@@ -256,4 +261,88 @@
       showToast("Authentication isn't connected yet — this arrives in Phase 2.");
     });
   }
+
+  /* ---------- 8. Admin Panel View Navigation ---------- */
+  function initAdminNavigation() {
+    const navItems = document.querySelectorAll(".sidebar-nav .nav-item");
+    const viewPanels = document.querySelectorAll(".admin-view-panel");
+
+    if (!navItems.length || !viewPanels.length) return;
+
+    navItems.forEach((button) => {
+      button.addEventListener("click", () => {
+        const targetId = button.getAttribute("data-target");
+
+        // Toggle active status on sidebar buttons
+        navItems.forEach((btn) => btn.classList.remove("active"));
+        button.classList.add("active");
+
+        // Hide all admin view panels
+        viewPanels.forEach((panel) => panel.classList.add("hidden"));
+
+        // Reveal targeted view panel
+        if (targetId) {
+          const targetPanel = document.getElementById(targetId);
+          if (targetPanel) {
+            targetPanel.classList.remove("hidden");
+          }
+        }
+      });
+    });
+  }
+
+  /* ---------- 9. Admin Student Directory Search & Filter ---------- */
+  function initStudentDirectoryFilter() {
+    const searchInput = document.querySelector("#student-search-input");
+    const nonUbCheckbox = document.querySelector("#filter-non-ub-checkbox");
+    const tableBody = document.querySelector("#student-table-body");
+
+    if (!tableBody || (!searchInput && !nonUbCheckbox)) return;
+
+    const filterTable = () => {
+      const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
+      const showNonUbOnly = nonUbCheckbox ? nonUbCheckbox.checked : false;
+      const rows = tableBody.querySelectorAll("tr");
+
+      rows.forEach((row) => {
+        const text = row.textContent.toLowerCase();
+        const emailCell = row.querySelector(".email-text");
+        const email = emailCell ? emailCell.textContent.toLowerCase() : "";
+        const isNonUb = !email.endsWith("@ub.edu.ph");
+
+        const matchesQuery = query === "" || text.includes(query);
+        const matchesNonUb = !showNonUbOnly || isNonUb;
+
+        if (matchesQuery && matchesNonUb) {
+          row.style.display = "";
+        } else {
+          row.style.display = "none";
+        }
+      });
+    };
+
+    if (searchInput) {
+      searchInput.addEventListener("input", filterTable);
+    }
+    if (nonUbCheckbox) {
+      nonUbCheckbox.addEventListener("change", filterTable);
+    }
+  }
+
+  /* ---------- 10. Logout Button Handler ---------- */
+  function initLogout() {
+    const logoutBtns = document.querySelectorAll("#logout-btn, #admin-logout-btn");
+    logoutBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        showToast("Logged out successfully.");
+      });
+    });
+  }
+
+  // Initialize admin components when DOM content is ready
+  document.addEventListener("DOMContentLoaded", () => {
+    initAdminNavigation();
+    initStudentDirectoryFilter();
+    initLogout();
+  });
 })();
