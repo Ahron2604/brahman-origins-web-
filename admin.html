@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brahman Origins - Admin Console</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-admin-dark text-admin-light">
+
+  <div class="admin-layout">
+    
+    <!-- Left Sidebar Panel -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <svg class="icon-shield-gold" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <span class="brand-title-admin font-display">BRAHMAN ORIGINS</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group-label">ADMIN CONSOLE</div>
+        <button class="nav-item active" id="tab-overview-btn" data-target="view-overview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Overview
+        </button>
+        <button class="nav-item" id="tab-students-btn" data-target="view-students">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Students
+        </button>
+        <button class="nav-item" id="tab-reports-btn" data-target="view-reports">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Game reports
+        </button>
+        <button class="nav-item" id="tab-inquiries-btn" data-target="view-inquiries">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          School inquiries
+        </button>
+
+        <div class="nav-group-label">SYSTEM</div>
+        <button class="nav-item" id="tab-access-btn" data-target="view-access">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Access control
+        </button>
+      </nav>
+    </aside>
+
+    <!-- Main Content Canvas Area -->
+    <div class="admin-main-container">
+      
+      <!-- Top Admin Header -->
+      <header class="admin-header">
+        <div class="admin-header-status">
+          <span class="status-indicator-live"></span>
+          ADMIN CONSOLE · LIVE
+        </div>
+
+        <div class="admin-header-actions">
+          <a href="student.html" class="btn-mode-switch-dark">Switch to Student Portal ↔</a>
+          <div class="admin-avatar">AD</div>
+          <button class="btn-outline-dark-sm" id="admin-logout-btn">Logout</button>
+        </div>
+      </header>
+
+      <!-- View Section 1: World Overview Panel -->
+      <main class="admin-view-panel" id="view-overview">
+        
+        <div class="view-header">
+          <h1 class="view-title font-display">World Overview</h1>
+          <p class="view-description">A complete pulse check on player activity, learning engagement, and the health of the Brahman Origins world.</p>
+        </div>
+
+        <!-- Metric Summary Row -->
+        <div class="admin-metrics-row">
+          <div class="admin-card-surface metric-stat-card">
+            <span class="stat-label">Active Players</span>
+            <div class="stat-val-group">
+              <span class="stat-value font-display">2,481</span>
+              <span class="stat-trend positive">+12.4%</span>
+            </div>
+          </div>
+          <div class="admin-card-surface metric-stat-card">
+            <span class="stat-label">Non-UBmail Users</span>
+            <div class="stat-val-group">
+              <span class="stat-value font-display">184</span>
+              <span class="stat-trend warning">Needs review</span>
+            </div>
+          </div>
+          <div class="admin-card-surface metric-stat-card">
+            <span class="stat-label">Open Tickets</span>
+            <div class="stat-val-group">
+              <span class="stat-value font-display">12</span>
+              <span class="stat-trend neutral">4 pending</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- World Health Card -->
+        <section class="admin-card-surface world-health-card">
+          <h2 class="card-subtitle font-display">World Health Metrics</h2>
+          <div class="health-metrics-grid">
+            <div class="health-item">
+              <div class="health-meta">
+                <span>Quest completion rate</span>
+                <span class="font-display">78%</span>
+              </div>
+              <div class="bar-track-dark"><div class="bar-fill-gold" style="width: 78%;"></div></div>
+            </div>
+            <div class="health-item">
+              <div class="health-meta">
+                <span>Daily active return rate</span>
+                <span class="font-display">64%</span>
+              </div>
+              <div class="bar-track-dark"><div class="bar-fill-gold" style="width: 64%;"></div></div>
+            </div>
+            <div class="health-item">
+              <div class="health-meta">
+                <span>Campus districts discovered</span>
+                <span class="font-display">6/8</span>
+              </div>
+              <div class="bar-track-dark"><div class="bar-fill-gold" style="width: 75%;"></div></div>
+            </div>
+          </div>
+          <div class="health-footer">
+            📍 Top activity zone: <strong class="text-gold">Old Library</strong> (1,284 player visits today)
+          </div>
+        </section>
+
+      </main>
+
+      <!-- View Section 2: Student Directory Panel -->
+      <main class="admin-view-panel hidden" id="view-students">
+        <div class="view-header">
+          <h1 class="view-title font-display">Student Directory</h1>
+          <p class="view-description">Manage enrolled player accounts and domain verification statuses across 243 active pages.</p>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="table-controls">
+          <div class="search-box">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="student-search-input" placeholder="Search name or email..." class="input-dark">
+          </div>
+          <label class="toggle-filter-label">
+            <input type="checkbox" id="filter-non-ub-checkbox">
+            <span>Show Non-UBmail Users Only</span>
+          </label>
+        </div>
+
+        <!-- Student Data Table -->
+        <div class="admin-card-surface table-wrapper">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>PLAYER</th>
+                <th>EMAIL & DOMAIN</th>
+                <th>COURSE</th>
+                <th>STATUS</th>
+                <th class="text-right">ACTION</th>
+              </tr>
+            </thead>
+            <tbody id="student-table-body">
+              <tr>
+                <td>
+                  <div class="player-col">
+                    <div class="avatar-sm-gold">KA</div>
+                    <span class="player-name">Kai Alvarado</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="email-col">
+                    <span class="email-text">kai.alvarado@ub.edu.ph</span>
+                    <span class="badge-verified-ub">UB Mail</span>
+                  </div>
+                </td>
+                <td><span class="badge-course">BSIT 3A</span></td>
+                <td><span class="status-dot active"></span> Active</td>
+                <td class="text-right"><a href="#" class="link-action">View details &rarr;</a></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="player-col">
+                    <div class="avatar-sm-gold avatar-dark-accent">MR</div>
+                    <span class="player-name">Marco Reyes</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="email-col">
+                    <span class="email-text">marco.reyes@gmail.com</span>
+                    <span class="badge-warning-ext">External Email</span>
+                  </div>
+                </td>
+                <td><span class="badge-course">BSCS 4B</span></td>
+                <td><span class="status-dot active"></span> Active</td>
+                <td class="text-right"><a href="#" class="link-action">View details &rarr;</a></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- 243 Pages Table Pagination Bar -->
+          <div class="table-pagination">
+            <div class="pagination-info">
+              Showing <strong>1–10</strong> of <strong>2,428</strong> students (Page <strong>1</strong> of <strong>243</strong>)
+            </div>
+            <div class="pagination-controls">
+              <button class="btn-pagination-nav" id="btn-prev-page" disabled>&laquo; Prev</button>
+              <button class="btn-pagination-page active">1</button>
+              <button class="btn-pagination-page">2</button>
+              <button class="btn-pagination-page">3</button>
+              <span class="pagination-ellipsis">&hellip;</span>
+              <button class="btn-pagination-page">243</button>
+              <button class="btn-pagination-nav" id="btn-next-page">Next &raquo;</button>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- View Section 3: Game Reports Panel -->
+      <main class="admin-view-panel hidden" id="view-reports">
+        <div class="view-header">
+          <h1 class="view-title font-display">Game Reports</h1>
+          <p class="view-description">Track open technical bugs and gameplay feedback tickets.</p>
+        </div>
+
+        <div class="reports-feed">
+          <div class="admin-card-surface report-ticket">
+            <div class="ticket-header">
+              <span class="badge-ticket-tech">Technical Issue</span>
+              <span class="ticket-time">10 mins ago</span>
+            </div>
+            <h3 class="ticket-title">Game crashed during Old Library quest</h3>
+            <div class="ticket-footer">
+              <p class="ticket-reporter">Reported by <strong>Marco Reyes</strong> <small>(BSCS 4B)</small></p>
+              <div class="ticket-actions">
+                <button class="btn-outline-dark-sm">View Ticket</button>
+                <button class="btn-gold-sm">Resolve</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- View Section 4: School Inquiries Panel -->
+      <main class="admin-view-panel hidden" id="view-inquiries">
+        <div class="view-header">
+          <h1 class="view-title font-display">School Inquiries</h1>
+          <p class="view-description">Review admission and general campus questions from visitors.</p>
+        </div>
+        <div class="admin-card-surface">
+          <p class="text-muted">No new inquiries submitted today.</p>
+        </div>
+      </main>
+
+      <!-- View Section 5: Access Control Panel -->
+      <main class="admin-view-panel hidden" id="view-access">
+        <div class="view-header">
+          <h1 class="view-title font-display">Access Control</h1>
+          <p class="view-description">Configure admin roles, domain whitelist permissions, and API tokens.</p>
+        </div>
+        <div class="admin-card-surface">
+          <p class="text-muted">System permissions are up to date.</p>
+        </div>
+      </main>
+
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
