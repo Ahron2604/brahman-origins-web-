@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Brahman Origins - Student Portal</title>
+  <link rel="stylesheet" href="style.css">
+  
+</head>
+<body class="bg-student-grid">
+
+  <!-- Shared Universal Header Bar -->
+  <header class="header-bar">
+    <div class="header-left">
+      <div class="brand-logo">
+        <svg class="icon-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <div class="brand-text">
+          <span class="brand-title">BRAHMAN ORIGINS</span>
+          <span class="brand-subtitle">UNIVERSITY OF BATANGAS</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-right">
+      
+      <button class="btn-icon" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+      </button>
+      <div class="user-avatar-circle">KA</div>
+      <button class="btn-outline-sm" id="logout-btn">Logout</button>
+      <a href="admin.html" class="btn-mode-switch">Switch to Admin Console ↔</a>
+    </div>
+  </header>
+
+  <!-- Main Canvas Container -->
+  <main class="student-canvas">
+    
+    <!-- Hero Greeting Header -->
+    <section class="hero-section">
+      <div class="hero-content">
+        <div class="status-pill-online">
+          <span class="dot-live"></span>
+          PLAYER PROFILE · ONLINE
+        </div>
+        <h1 class="font-display hero-title">Welcome back, Kai.</h1>
+        <p class="hero-subtitle">Continue your journey through the University of Batangas.</p>
+      </div>
+      <div class="hero-action">
+        <button class="btn-gold-lg" data-play-game>
+          <svg class="icon-swords" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/>
+            <line x1="13" y1="19" x2="19" y2="13"/>
+            <polyline points="9.5 6.5 21 18 21 21 18 21 6.5 9.5"/>
+            <line x1="11" y1="5" x2="5" y2="11"/>
+          </svg>
+          Enter the world
+        </button>
+      </div>
+    </section>
+
+    <!-- Main Player Profile Card -->
+    <section class="card-surface player-profile-card">
+      <div class="profile-main-info">
+        <div class="profile-avatar-lg">KA</div>
+        <div class="profile-meta">
+          <span class="badge-level">LEVEL 24 · CAMPUS GUARDIAN</span>
+          <h2 class="profile-name">Kai Alvarado</h2>
+          <span class="profile-email">kai.alvarado@ub.edu.ph</span>
+        </div>
+      </div>
+      <div class="profile-xp-widget">
+        <div class="xp-labels">
+          <span class="xp-title">Level Progress</span>
+          <span class="xp-value">2,840 / 3,500 XP</span>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" style="width: 81%;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+      
+      <!-- Left Column -->
+      <div class="grid-column">
+        
+        <!-- Core Metrics Card -->
+        <section class="card-surface metrics-card">
+          <div class="metric-col">
+            <span class="metric-label">RANK</span>
+            <span class="metric-value font-display">#18</span>
+          </div>
+          <div class="metric-divider"></div>
+          <div class="metric-col">
+            <span class="metric-label">POINTS</span>
+            <span class="metric-value font-display">12,420</span>
+          </div>
+          <div class="metric-divider"></div>
+          <div class="metric-col">
+            <span class="metric-label">QUESTS</span>
+            <span class="metric-value font-display">47</span>
+          </div>
+        </section>
+
+        <!-- Active Quests Card -->
+        <section class="card-surface quests-card">
+          <div class="card-header">
+            <h3 class="card-title font-display">Active quests</h3>
+            <span class="badge-subtle">3 available</span>
+          </div>
+          <ul class="quest-list">
+            <li class="quest-item">
+              <div class="quest-info">
+                <span class="quest-title">Map the Campus</span>
+                <span class="quest-desc">Explore 4 more districts</span>
+              </div>
+              <span class="badge-gold-pill">60%</span>
+            </li>
+            <li class="quest-item">
+              <div class="quest-info">
+                <span class="quest-title">Rise through the ranks</span>
+                <span class="quest-desc">Earn 580 more points</span>
+              </div>
+              <span class="badge-gold-pill">82%</span>
+            </li>
+          </ul>
+        </section>
+
+      </div>
+
+      <!-- Right Column -->
+      <div class="grid-column">
+        
+        <!-- Recent Activity Feed -->
+        <section class="card-surface activity-card">
+          <div class="card-header">
+            <h3 class="card-title font-display">Recent activity</h3>
+            <a href="#" class="link-subtle">View all</a>
+          </div>
+          <ul class="activity-feed">
+            <li class="activity-item">
+              <div class="activity-icon-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+              </div>
+              <div class="activity-details">
+                <span class="activity-title">Guardian of the Old Library</span>
+                <span class="activity-meta">Quest completed · 2 hours ago</span>
+              </div>
+              <span class="xp-gain-badge">+280 XP</span>
+            </li>
+            <li class="activity-item">
+              <div class="activity-icon-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+              </div>
+              <div class="activity-details">
+                <span class="activity-title">Ancient Skills I</span>
+                <span class="activity-meta">New skill unlocked · Yesterday</span>
+              </div>
+              <span class="xp-gain-badge">+150 XP</span>
+            </li>
+          </ul>
+        </section>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>
