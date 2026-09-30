@@ -6,10 +6,15 @@
 (function () {
   "use strict";
 
-  // Configuration
+  /* ==========================================================================
+     CONFIGURATIONS
+     ========================================================================== */
   const GAME_URL = null; // Set to Unity WebGL build URL when deployed
+  const GOOGLE_CLIENT_ID = "964623719325-98f01kp5ooeeftst9hulhsou4oftukfs.apps.googleusercontent.com";
 
-  /* ---------- 1. Mobile Navigation Toggle ---------- */
+  /* ==========================================================================
+     1. MOBILE NAVIGATION
+     ========================================================================== */
   const navToggle = document.querySelector(".nav-toggle");
   const navLinks = document.querySelector(".nav-links");
 
@@ -44,7 +49,9 @@
     });
   }
 
-  /* ---------- 2. Dynamic ScrollSpy & Nav Highlighting ---------- */
+  /* ==========================================================================
+     2. DYNAMIC SCROLLSPY & ACTIVE NAVIGATION INDICATOR
+     ========================================================================== */
   const navAnchors = document.querySelectorAll(".nav-links a");
 
   function updateActiveNav() {
@@ -60,6 +67,7 @@
       });
     };
 
+    /* ----- Guidelines Page ----- */
     if (currentPage.includes("guidelines.html")) {
       clearActive();
       navAnchors.forEach((link) => {
@@ -71,6 +79,7 @@
       return;
     }
 
+    /* ----- Login Page ----- */
     if (currentPage.includes("login.html")) {
       clearActive();
       navAnchors.forEach((link) => {
@@ -82,7 +91,7 @@
       return;
     }
 
-    // ScrollSpy for index.html sections
+    /* ----- ScrollSpy for index.html Sections ----- */
     const aboutSection = document.querySelector("#about");
     const leaderboardSection = document.querySelector("#leaderboard");
 
@@ -106,9 +115,14 @@
       const href = link.getAttribute("href") || "";
       let isMatch = false;
 
-      if (activeKey === "about" && href.includes("#about")) isMatch = true;
-      else if (activeKey === "leaderboard" && href.includes("#leaderboard")) isMatch = true;
-      else if (activeKey === "home" && (href === "index.html" || href === "#" || href === "/" || href.endsWith("index.html"))) {
+      if (activeKey === "about" && href.includes("#about")) {
+        isMatch = true;
+      } else if (activeKey === "leaderboard" && href.includes("#leaderboard")) {
+        isMatch = true;
+      } else if (
+        activeKey === "home" &&
+        (href === "index.html" || href === "#" || href === "/" || href.endsWith("index.html"))
+      ) {
         isMatch = true;
       }
 
@@ -121,9 +135,10 @@
 
   window.addEventListener("scroll", updateActiveNav, { passive: true });
   window.addEventListener("resize", updateActiveNav, { passive: true });
-  document.addEventListener("DOMContentLoaded", updateActiveNav);
 
-  /* ---------- 3. Smooth Anchor Scrolling ---------- */
+  /* ==========================================================================
+     3. SMOOTH ANCHOR SCROLLING
+     ========================================================================== */
   document.querySelectorAll('a[href*="#"]:not([href="#"])').forEach((anchor) => {
     anchor.addEventListener("click", function (e) {
       const href = this.getAttribute("href");
@@ -138,6 +153,7 @@
         const header = document.querySelector(".site-header");
         const headerOffset = header ? header.offsetHeight : 0;
         const elementPosition = targetEl.getBoundingClientRect().top + window.pageYOffset;
+
         window.scrollTo({
           top: elementPosition - headerOffset,
           behavior: "smooth"
@@ -146,7 +162,9 @@
     });
   });
 
-  /* ---------- 4. Toast Notification System ---------- */
+  /* ==========================================================================
+     4. TOAST NOTIFICATION SYSTEM
+     ========================================================================== */
   let toastTimeout = null;
 
   function showToast(message) {
@@ -172,7 +190,9 @@
     toastTimeout = setTimeout(() => toast.classList.remove("show"), 3800);
   }
 
-  /* ---------- 5. Populate Dynamic Leaderboard Table ---------- */
+  /* ==========================================================================
+     5. DYNAMIC LEADERBOARD RENDERER
+     ========================================================================== */
   const mockLeaderboardData = [
     { rank: "#01", name: "Miguel Santos", initials: "MS", stage: "College (BSIT)", level: 42, xp: "18,940 XP" },
     { rank: "#02", name: "Alyssa Reyes", initials: "AR", stage: "College (BSCS)", level: 39, xp: "16,820 XP" },
@@ -205,9 +225,9 @@
       .join("");
   }
 
-  document.addEventListener("DOMContentLoaded", renderLeaderboard);
-
-  /* ---------- 6. Play Game Button & Modal Handler ---------- */
+  /* ==========================================================================
+     6. PLAY GAME BUTTON HANDLER
+     ========================================================================== */
   document.querySelectorAll("[data-play-game]").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.preventDefault();
@@ -219,11 +239,14 @@
     });
   });
 
-  /* ---------- 7. Login Form UB Email Handler ---------- */
+  /* ==========================================================================
+     7. EMAIL & PASSWORD LOGIN HANDLER
+     ========================================================================== */
   const loginForm = document.querySelector("#login-form");
   if (loginForm) {
     const emailInput = loginForm.querySelector("#email");
-    const errorEl = loginForm.querySelector(".field-error");
+    const passwordInput = loginForm.querySelector("#password");
+    const errorEl = loginForm.querySelector("#email-error, .field-error");
 
     if (emailInput) {
       emailInput.addEventListener("input", () => {
@@ -240,11 +263,12 @@
       if (!emailInput) return;
 
       const email = emailInput.value.trim().toLowerCase();
-      const isUbEmail = /@ub\.edu\.ph$/.test(email);
+      const password = passwordInput ? passwordInput.value : "";
+      const isUbEmail = /^[^\s@]+@ub\.edu\.ph$/i.test(email);
 
       if (!isUbEmail) {
         if (errorEl) {
-          errorEl.textContent = "Please use your official University of Batangas email address (@ub.edu.ph).";
+          errorEl.textContent = "Please enter a valid University of Batangas email address (@ub.edu.ph).";
           errorEl.classList.add("show");
           errorEl.style.display = "block";
         }
@@ -253,16 +277,134 @@
         return;
       }
 
+      if (!password) {
+        showToast("Please enter your password, UBian.");
+        if (passwordInput) passwordInput.focus();
+        return;
+      }
+
       if (errorEl) {
         errorEl.classList.remove("show");
         errorEl.style.display = "none";
       }
       emailInput.removeAttribute("aria-invalid");
-      showToast("Authentication isn't connected yet — this arrives in Phase 2.");
+
+      showToast("UB account accepted. Backend authentication will connect in Phase 2!");
     });
   }
 
-  /* ---------- 8. Admin Panel View Navigation ---------- */
+  /* ==========================================================================
+     8. GOOGLE SIGN-IN INTEGRATION
+     ========================================================================== */
+  const googleContainer = document.querySelector("#google-signin");
+
+  if (googleContainer) {
+    function showGoogleError(message) {
+      const error = document.querySelector("#google-login-error, .google-error");
+      if (!error) return;
+
+      error.textContent = message;
+      error.style.display = "block";
+      error.classList.add("show");
+    }
+
+    function clearGoogleError() {
+      const error = document.querySelector("#google-login-error, .google-error");
+      if (!error) return;
+
+      error.textContent = "";
+      error.style.display = "none";
+      error.classList.remove("show");
+    }
+
+    function decodeJwtPayload(token) {
+      try {
+        const parts = token.split(".");
+        if (parts.length !== 3) return null;
+
+        const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+        const json = decodeURIComponent(
+          atob(base64)
+            .split("")
+            .map((char) => "%" + ("00" + char.charCodeAt(0).toString(16)).slice(-2))
+            .join("")
+        );
+
+        return JSON.parse(json);
+      } catch (error) {
+        console.error("Unable to decode Google token:", error);
+        return null;
+      }
+    }
+
+    function handleGoogleLogin(response) {
+      clearGoogleError();
+
+      if (!response || !response.credential) {
+        showGoogleError("Google sign-in did not return a valid credential.");
+        return;
+      }
+
+      const payload = decodeJwtPayload(response.credential);
+      if (!payload) {
+        showGoogleError("Unable to process your Google account.");
+        return;
+      }
+
+      const hostedDomain = (payload.hd || "").toLowerCase();
+      const email = (payload.email || "").toLowerCase();
+      const isUbAccount = hostedDomain === "ub.edu.ph" || email.endsWith("@ub.edu.ph");
+
+      if (!isUbAccount) {
+        showGoogleError("Please sign in using your official University of Batangas Google account (@ub.edu.ph).");
+        return;
+      }
+
+      console.log("Google sign-in successful:", email);
+      showToast("Google account verified. Welcome, UBian!");
+    }
+
+    window.handleGoogleLogin = handleGoogleLogin;
+
+    function initializeGoogleSignIn() {
+      if (typeof google === "undefined" || !google.accounts || !google.accounts.id) {
+        setTimeout(initializeGoogleSignIn, 300);
+        return;
+      }
+
+      if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes("YOUR_GOOGLE_CLIENT_ID")) {
+        showGoogleError("Google Sign-In is not configured yet. Add your Google Client ID in main.js.");
+        return;
+      }
+
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleLogin,
+        auto_select: false,
+        cancel_on_tap_outside: true
+      });
+
+      google.accounts.id.renderButton(googleContainer, {
+        type: "standard",
+        theme: "outline",
+        size: "large",
+        text: "signin_with",
+        shape: "rectangular",
+        logo_alignment: "left",
+        width: 360
+      });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initializeGoogleSignIn);
+    } else {
+      initializeGoogleSignIn();
+    }
+  }
+
+  /* ==========================================================================
+     9. ADMIN PANEL NAVIGATION
+     ========================================================================== */
   function initAdminNavigation() {
     const navItems = document.querySelectorAll(".sidebar-nav .nav-item");
     const viewPanels = document.querySelectorAll(".admin-view-panel");
@@ -273,14 +415,11 @@
       button.addEventListener("click", () => {
         const targetId = button.getAttribute("data-target");
 
-        // Toggle active status on sidebar buttons
         navItems.forEach((btn) => btn.classList.remove("active"));
         button.classList.add("active");
 
-        // Hide all admin view panels
         viewPanels.forEach((panel) => panel.classList.add("hidden"));
 
-        // Reveal targeted view panel
         if (targetId) {
           const targetPanel = document.getElementById(targetId);
           if (targetPanel) {
@@ -291,7 +430,9 @@
     });
   }
 
-  /* ---------- 9. Admin Student Directory Search & Filter ---------- */
+  /* ==========================================================================
+     10. ADMIN STUDENT DIRECTORY SEARCH & FILTER
+     ========================================================================== */
   function initStudentDirectoryFilter() {
     const searchInput = document.querySelector("#student-search-input");
     const nonUbCheckbox = document.querySelector("#filter-non-ub-checkbox");
@@ -313,11 +454,7 @@
         const matchesQuery = query === "" || text.includes(query);
         const matchesNonUb = !showNonUbOnly || isNonUb;
 
-        if (matchesQuery && matchesNonUb) {
-          row.style.display = "";
-        } else {
-          row.style.display = "none";
-        }
+        row.style.display = matchesQuery && matchesNonUb ? "" : "none";
       });
     };
 
@@ -329,7 +466,9 @@
     }
   }
 
-  /* ---------- 10. Logout Button Handler ---------- */
+  /* ==========================================================================
+     11. LOGOUT HANDLER
+     ========================================================================== */
   function initLogout() {
     const logoutBtns = document.querySelectorAll("#logout-btn, #admin-logout-btn");
     logoutBtns.forEach((btn) => {
@@ -339,8 +478,12 @@
     });
   }
 
-  // Initialize admin components when DOM content is ready
+  /* ==========================================================================
+     DOM INITIALIZERS
+     ========================================================================== */
   document.addEventListener("DOMContentLoaded", () => {
+    updateActiveNav();
+    renderLeaderboard();
     initAdminNavigation();
     initStudentDirectoryFilter();
     initLogout();
