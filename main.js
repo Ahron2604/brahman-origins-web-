@@ -9,7 +9,7 @@
    All async helpers call getSupabase() so they fail gracefully on pages
    that don't load the Supabase CDN (e.g. guidelines.html, index without CDN).
    -------------------------------------------------------------------------- */
-const SUPABASE_URL  = 'https://xbnjmtmmclrippwoblew.supabase.co';
+const SUPABASE_URL = 'https://xbnjmtmmclrippwoblew.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhibmptdG1tY2xyaXBwd29ibGV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3OTMyNjMsImV4cCI6MjEwNTM2OTI2M30.GPZ9q_1vtpF6SbbAHPzsL_OMUJrhxmF3JpK0kMQtTjo';
 
 let _supabase = null;
@@ -28,8 +28,7 @@ function getSupabase() {
      CONFIGURATIONS
      ========================================================================== */
   const GAME_URL = null; // Set to Unity WebGL build URL when deployed
-  const GOOGLE_CLIENT_ID = "964623719325-98f01kp5ooeeftst9hulhsou4oftukfs.apps.googleusercontent.com";
-
+    const GOOGLE_CLIENT_ID = "964623719325-98f01kp5ooeeftst9hulhsou4oftukfs.apps.googleusercontent.com";
   /* ==========================================================================
      1. MOBILE NAVIGATION
      ========================================================================== */

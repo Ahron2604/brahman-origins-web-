@@ -4,11 +4,25 @@
 // Shared by all api/*.php endpoints
 // =============================================================================
 
-define('SUPABASE_URL',     'https://xbnjmtmmclrippwoblew.supabase.co');
-// Use the service_role key here so PHP can bypass RLS for server-side writes.
-// NEVER expose this key in front-end JS — keep it server-side only.
-define('SUPABASE_SERVICE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhibmptdG1tY2xyaXBwd29ibGV3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4OTc5MzI2MywiZXhwIjoyMTA1MzY5MjYzfQ.5SeJB8ne9Xf888VkgMBjImkK71FiDElHmRyXcGSMl84');
-// ^ Replace with: Supabase Dashboard → Settings → API → service_role (secret) key
+$envPath = dirname(__DIR__) . '/.env';
+$envValues = is_file($envPath) ? parse_ini_file($envPath, false, INI_SCANNER_RAW) : [];
+
+function app_env(string $name, array $envValues): string {
+    $value = getenv($name);
+    if ($value === false) {
+        $value = $envValues[$name] ?? '';
+    }
+    return trim((string) $value, " \\\t\\\n\\\r\\\0\\\x0B\\\"'");
+}
+
+define('SUPABASE_URL', app_env('SUPABASE_URL', $envValues));
+define('SUPABASE_SERVICE_KEY', app_env('SUPABASE_SERVICE_KEY', $envValues));
+
+if (SUPABASE_URL === '' || SUPABASE_SERVICE_KEY === '') {
+    error_log('Missing required Supabase environment variables.');
+    http_response_code(500);
+    exit('Server configuration error.');
+}
 
 /**
  * Make an authenticated request to the Supabase REST API.
