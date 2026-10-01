@@ -404,6 +404,7 @@
 
   /* ==========================================================================
      9. ADMIN PANEL NAVIGATION
+     Tab switching with aria-current update and smooth panel transition.
      ========================================================================== */
   function initAdminNavigation() {
     const navItems = document.querySelectorAll(".sidebar-nav .nav-item");
@@ -415,15 +416,23 @@
       button.addEventListener("click", () => {
         const targetId = button.getAttribute("data-target");
 
-        navItems.forEach((btn) => btn.classList.remove("active"));
+        // Update active state + aria-current on nav buttons
+        navItems.forEach((btn) => {
+          btn.classList.remove("active");
+          btn.removeAttribute("aria-current");
+        });
         button.classList.add("active");
+        button.setAttribute("aria-current", "page");
 
+        // Hide all panels, reveal the target
         viewPanels.forEach((panel) => panel.classList.add("hidden"));
 
         if (targetId) {
           const targetPanel = document.getElementById(targetId);
           if (targetPanel) {
             targetPanel.classList.remove("hidden");
+            // Scroll the main container back to top on tab switch
+            targetPanel.closest(".admin-main-container")?.scrollTo({ top: 0, behavior: "smooth" });
           }
         }
       });
@@ -432,49 +441,129 @@
 
   /* ==========================================================================
      10. ADMIN STUDENT DIRECTORY SEARCH & FILTER
+     Filters by name/email text and optionally shows only non-UBmail rows.
+     Updates the "showing X–Y" pagination info label live.
      ========================================================================== */
   function initStudentDirectoryFilter() {
-    const searchInput = document.querySelector("#student-search-input");
+    const searchInput   = document.querySelector("#student-search-input");
     const nonUbCheckbox = document.querySelector("#filter-non-ub-checkbox");
-    const tableBody = document.querySelector("#student-table-body");
+    const tableBody     = document.querySelector("#student-table-body");
+    const paginationInfo = document.querySelector(".pagination-info");
 
     if (!tableBody || (!searchInput && !nonUbCheckbox)) return;
 
     const filterTable = () => {
-      const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
+      const query        = searchInput ? searchInput.value.toLowerCase().trim() : "";
       const showNonUbOnly = nonUbCheckbox ? nonUbCheckbox.checked : false;
-      const rows = tableBody.querySelectorAll("tr");
+      const rows         = tableBody.querySelectorAll("tr");
+      let visibleCount   = 0;
 
       rows.forEach((row) => {
-        const text = row.textContent.toLowerCase();
+        const text      = row.textContent.toLowerCase();
         const emailCell = row.querySelector(".email-text");
-        const email = emailCell ? emailCell.textContent.toLowerCase() : "";
-        const isNonUb = !email.endsWith("@ub.edu.ph");
+        const email     = emailCell ? emailCell.textContent.toLowerCase() : "";
+        const isNonUb   = !email.endsWith("@ub.edu.ph");
 
-        const matchesQuery = query === "" || text.includes(query);
-        const matchesNonUb = !showNonUbOnly || isNonUb;
+        const matchesQuery  = query === "" || text.includes(query);
+        const matchesFilter = !showNonUbOnly || isNonUb;
+        const visible       = matchesQuery && matchesFilter;
 
-        row.style.display = matchesQuery && matchesNonUb ? "" : "none";
+        row.style.display = visible ? "" : "none";
+        if (visible) visibleCount++;
       });
+
+      // Update the visible count label when a filter is active
+      if (paginationInfo && (query || showNonUbOnly)) {
+        paginationInfo.innerHTML = `Showing <strong>${visibleCount}</strong> filtered result${visibleCount !== 1 ? "s" : ""}`;
+      } else if (paginationInfo) {
+        paginationInfo.innerHTML = `Showing <strong>1–10</strong> of <strong>2,428</strong> students (Page <strong>1</strong> of <strong>243</strong>)`;
+      }
     };
 
-    if (searchInput) {
-      searchInput.addEventListener("input", filterTable);
-    }
-    if (nonUbCheckbox) {
-      nonUbCheckbox.addEventListener("change", filterTable);
+    if (searchInput)   searchInput.addEventListener("input",  filterTable);
+    if (nonUbCheckbox) nonUbCheckbox.addEventListener("change", filterTable);
+  }
+
+  /* ==========================================================================
+     11. ADMIN TICKET ACTIONS
+     Resolve button removes the ticket card with a fade; View Ticket toasts.
+     ========================================================================== */
+  function initTicketActions() {
+    const feed = document.querySelector(".reports-feed");
+    if (!feed) return;
+
+    feed.addEventListener("click", (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+
+      const card = btn.closest(".report-ticket");
+
+      if (btn.classList.contains("btn-gold-sm")) {
+        // Resolve: fade out and remove
+        if (card) {
+          card.style.transition = "opacity 0.35s ease, transform 0.35s ease";
+          card.style.opacity = "0";
+          card.style.transform = "translateX(12px)";
+          setTimeout(() => {
+            card.remove();
+            // If feed is now empty, insert the empty state
+            if (feed.querySelectorAll(".report-ticket").length === 0) {
+              feed.innerHTML = `
+                <div class="admin-card-surface">
+                  <div class="empty-state">
+                    <div class="empty-state-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    </div>
+                    <p class="empty-state-title">All tickets resolved</p>
+                    <p class="empty-state-desc">There are no open game reports right now. Great work keeping the world healthy!</p>
+                  </div>
+                </div>`;
+            }
+          }, 380);
+          showToast("Ticket marked as resolved.");
+        }
+      } else if (btn.classList.contains("btn-outline-dark-sm") && btn.textContent.trim() === "View Ticket") {
+        showToast("Full ticket viewer coming in Phase 2.");
+      }
+    });
+  }
+
+  /* ==========================================================================
+     12. EMPTY-STATE QUICK-ACTION BUTTONS
+     Toasts for scaffold buttons in Inquiries and Access Control panels.
+     ========================================================================== */
+  function initEmptyStateActions() {
+    const actions = {
+      "btn-compose-inquiry": "Inquiry composer coming in Phase 2.",
+      "btn-manage-roles":    "Role management panel coming in Phase 2.",
+      "btn-view-tokens":     "API token manager coming in Phase 2.",
+    };
+
+    Object.entries(actions).forEach(([id, message]) => {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.addEventListener("click", () => showToast(message));
+      }
+    });
+
+    // Archive link in inquiries panel
+    const archiveLink = document.querySelector("#view-inquiries .empty-state-action-ghost");
+    if (archiveLink) {
+      archiveLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        showToast("Inquiry archive coming in Phase 2.");
+      });
     }
   }
 
   /* ==========================================================================
-     11. LOGOUT HANDLER
+     13. LOGOUT HANDLER
      ========================================================================== */
   function initLogout() {
-    const logoutBtns = document.querySelectorAll("#logout-btn, #admin-logout-btn");
-    logoutBtns.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        showToast("Logged out successfully.");
-      });
+    document.querySelectorAll("#logout-btn, #admin-logout-btn").forEach((btn) => {
+      btn.addEventListener("click", () => showToast("Logged out successfully."));
     });
   }
 
@@ -486,6 +575,8 @@
     renderLeaderboard();
     initAdminNavigation();
     initStudentDirectoryFilter();
+    initTicketActions();
+    initEmptyStateActions();
     initLogout();
   });
 })();
