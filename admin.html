@@ -86,7 +86,6 @@
         </div>
 
         <div class="admin-header-actions">
-          <a href="student.html" class="btn-mode-switch-dark">Switch to Student Portal ↔</a>
           <div class="admin-avatar" title="Admin user" aria-label="Admin">AD</div>
           <button class="btn-outline-dark-sm" id="admin-logout-btn">Logout</button>
         </div>
@@ -381,25 +380,8 @@
         </div>
 
         <div class="admin-card-surface">
-          <div class="empty-state">
-            <div class="empty-state-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              </svg>
-            </div>
-            <p class="empty-state-title">No new inquiries today</p>
-            <p class="empty-state-desc">
-              When prospective students or guardians submit questions through the public inquiry form, they'll appear here for review and response.
-            </p>
-            <div class="empty-state-actions">
-              <button class="empty-state-action" id="btn-compose-inquiry">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                Compose Message
-              </button>
-              <a href="#" class="empty-state-action-ghost">View Inquiry Archive</a>
-            </div>
+          <div class="inquiries-feed">
+            <div style="padding:24px;color:var(--text-muted);text-align:center;">Loading inquiries…</div>
           </div>
         </div>
 
@@ -447,6 +429,8 @@
     </div><!-- /.admin-main-container -->
   </div><!-- /.admin-layout -->
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="main.js"></script>
+
 </body>
 </html>

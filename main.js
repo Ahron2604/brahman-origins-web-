@@ -3,6 +3,24 @@
    University of Batangas · Capstone Companion Site
    ========================================================================== */
 
+/* --------------------------------------------------------------------------
+   SUPABASE INIT (TASK 1)
+   Guard: only initialise if the CDN global is available on this page.
+   All async helpers call getSupabase() so they fail gracefully on pages
+   that don't load the Supabase CDN (e.g. guidelines.html, index without CDN).
+   -------------------------------------------------------------------------- */
+const SUPABASE_URL  = 'https://xbnjmtmmclrippwoblew.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhibmptdG1tY2xyaXBwd29ibGV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3OTMyNjMsImV4cCI6MjEwNTM2OTI2M30.GPZ9q_1vtpF6SbbAHPzsL_OMUJrhxmF3JpK0kMQtTjo';
+
+let _supabase = null;
+function getSupabase() {
+  if (_supabase) return _supabase;
+  if (typeof window !== 'undefined' && window.supabase && window.supabase.createClient) {
+    _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+  return _supabase;
+}
+
 (function () {
   "use strict";
 
@@ -16,7 +34,7 @@
      1. MOBILE NAVIGATION
      ========================================================================== */
   const navToggle = document.querySelector(".nav-toggle");
-  const navLinks = document.querySelector(".nav-links");
+  const navLinks  = document.querySelector(".nav-links");
 
   if (navToggle) {
     const toggleMenu = (open) => {
@@ -50,14 +68,14 @@
   }
 
   /* ==========================================================================
-     2. DYNAMIC SCROLLSPY & ACTIVE NAVIGATION INDICATOR
+     2. SCROLLSPY & ACTIVE NAVIGATION
      ========================================================================== */
   const navAnchors = document.querySelectorAll(".nav-links a");
 
   function updateActiveNav() {
     if (!navAnchors.length) return;
 
-    const path = window.location.pathname;
+    const path        = window.location.pathname;
     const currentPage = path.substring(path.lastIndexOf("/") + 1) || "index.html";
 
     const clearActive = () => {
@@ -67,7 +85,6 @@
       });
     };
 
-    /* ----- Guidelines Page ----- */
     if (currentPage.includes("guidelines.html")) {
       clearActive();
       navAnchors.forEach((link) => {
@@ -79,7 +96,6 @@
       return;
     }
 
-    /* ----- Login Page ----- */
     if (currentPage.includes("login.html")) {
       clearActive();
       navAnchors.forEach((link) => {
@@ -91,17 +107,15 @@
       return;
     }
 
-    /* ----- ScrollSpy for index.html Sections ----- */
-    const aboutSection = document.querySelector("#about");
+    const aboutSection       = document.querySelector("#about");
     const leaderboardSection = document.querySelector("#leaderboard");
-
-    const scrollY = window.scrollY;
-    const header = document.querySelector(".site-header");
-    const headerOffset = header ? header.offsetHeight + 60 : 120;
-    const currentScrollPos = scrollY + headerOffset;
+    const scrollY            = window.scrollY;
+    const header             = document.querySelector(".site-header");
+    const headerOffset       = header ? header.offsetHeight + 60 : 120;
+    const currentScrollPos   = scrollY + headerOffset;
 
     let activeKey = "home";
-    const aboutTop = aboutSection ? aboutSection.offsetTop : Infinity;
+    const aboutTop       = aboutSection       ? aboutSection.offsetTop       : Infinity;
     const leaderboardTop = leaderboardSection ? leaderboardSection.offsetTop : Infinity;
 
     if (leaderboardSection && currentScrollPos >= leaderboardTop) {
@@ -112,20 +126,13 @@
 
     clearActive();
     navAnchors.forEach((link) => {
-      const href = link.getAttribute("href") || "";
-      let isMatch = false;
-
-      if (activeKey === "about" && href.includes("#about")) {
+      const href    = link.getAttribute("href") || "";
+      let isMatch   = false;
+      if      (activeKey === "about"       && href.includes("#about"))       isMatch = true;
+      else if (activeKey === "leaderboard" && href.includes("#leaderboard")) isMatch = true;
+      else if (activeKey === "home" &&
+               (href === "index.html" || href === "#" || href === "/" || href.endsWith("index.html")))
         isMatch = true;
-      } else if (activeKey === "leaderboard" && href.includes("#leaderboard")) {
-        isMatch = true;
-      } else if (
-        activeKey === "home" &&
-        (href === "index.html" || href === "#" || href === "/" || href.endsWith("index.html"))
-      ) {
-        isMatch = true;
-      }
-
       if (isMatch) {
         link.setAttribute("aria-current", "page");
         link.classList.add("active");
@@ -141,21 +148,17 @@
      ========================================================================== */
   document.querySelectorAll('a[href*="#"]:not([href="#"])').forEach((anchor) => {
     anchor.addEventListener("click", function (e) {
-      const href = this.getAttribute("href");
+      const href      = this.getAttribute("href");
       const hashIndex = href.indexOf("#");
       if (hashIndex === -1) return;
 
-      const targetId = href.substring(hashIndex);
-      const targetEl = document.querySelector(targetId);
-
+      const targetEl = document.querySelector(href.substring(hashIndex));
       if (targetEl) {
         e.preventDefault();
-        const header = document.querySelector(".site-header");
+        const header       = document.querySelector(".site-header");
         const headerOffset = header ? header.offsetHeight : 0;
-        const elementPosition = targetEl.getBoundingClientRect().top + window.pageYOffset;
-
         window.scrollTo({
-          top: elementPosition - headerOffset,
+          top:      targetEl.getBoundingClientRect().top + window.pageYOffset - headerOffset,
           behavior: "smooth"
         });
       }
@@ -167,9 +170,8 @@
      ========================================================================== */
   let toastTimeout = null;
 
-  function showToast(message) {
+  function showToast(message, type = "info") {
     let toast = document.querySelector(".toast");
-
     if (!toast) {
       toast = document.createElement("div");
       toast.className = "toast";
@@ -182,47 +184,66 @@
     const msgEl = toast.querySelector(".toast-msg");
     if (msgEl) msgEl.textContent = message;
 
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => toast.classList.add("show"));
-    });
+    // Colour the dot for error toasts
+    const dot = toast.querySelector(".dot");
+    if (dot) dot.style.background = type === "error" ? "#dc2626" : "";
 
+    requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add("show")));
     if (toastTimeout) clearTimeout(toastTimeout);
     toastTimeout = setTimeout(() => toast.classList.remove("show"), 3800);
   }
 
   /* ==========================================================================
      5. DYNAMIC LEADERBOARD RENDERER
+     Populated from Supabase when available; falls back to mock data.
      ========================================================================== */
   const mockLeaderboardData = [
-    { rank: "#01", name: "Miguel Santos", initials: "MS", stage: "College (BSIT)", level: 42, xp: "18,940 XP" },
-    { rank: "#02", name: "Alyssa Reyes", initials: "AR", stage: "College (BSCS)", level: 39, xp: "16,820 XP" },
-    { rank: "#03", name: "Christian Cruz", initials: "CC", stage: "Senior High (STEM)", level: 35, xp: "14,500 XP" },
-    { rank: "#04", name: "Kai Alvarado", initials: "KA", stage: "College (BSIT)", level: 24, xp: "12,420 XP" },
-    { rank: "#05", name: "Bea Dimaculangan", initials: "BD", stage: "High School", level: 19, xp: "9,180 XP" }
+    { rank: "#01", name: "Miguel Santos",    initials: "MS", stage: "College (BSIT)",     level: 42, xp: "18,940 XP" },
+    { rank: "#02", name: "Alyssa Reyes",     initials: "AR", stage: "College (BSCS)",     level: 39, xp: "16,820 XP" },
+    { rank: "#03", name: "Christian Cruz",   initials: "CC", stage: "Senior High (STEM)", level: 35, xp: "14,500 XP" },
+    { rank: "#04", name: "Kai Alvarado",     initials: "KA", stage: "College (BSIT)",     level: 24, xp: "12,420 XP" },
+    { rank: "#05", name: "Bea Dimaculangan", initials: "BD", stage: "High School",        level: 19, xp: "9,180 XP"  }
   ];
 
-  function renderLeaderboard() {
+  function renderLeaderboard(rows) {
     const tbody = document.querySelector(".leaderboard-table tbody");
     if (!tbody) return;
 
-    tbody.innerHTML = mockLeaderboardData
-      .map(
-        (row) => `
+    const data = rows || mockLeaderboardData;
+    tbody.innerHTML = data.map((row) => `
       <tr>
-        <td class="lb-rank"><strong>${row.rank}</strong></td>
+        <td class="lb-rank"><strong>${row.rank || ("#" + String(row.rank_num || 0).padStart(2,"0"))}</strong></td>
         <td>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <span class="lb-avatar">${row.initials}</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="lb-avatar">${row.initials || (row.name || "?").split(" ").map(n => n[0]).join("").toUpperCase().substring(0,2)}</span>
             <strong>${row.name}</strong>
           </div>
         </td>
-        <td><span class="stage-pill">${row.stage}</span></td>
-        <td><strong>LVL ${row.level}</strong></td>
-        <td class="lb-xp">${row.xp}</td>
-      </tr>
-    `
-      )
-      .join("");
+        <td><span class="stage-pill">${row.stage || row.course || "—"}</span></td>
+        <td><strong>LVL ${row.level || 0}</strong></td>
+        <td class="lb-xp">${row.xp || ((row.xp_total || 0).toLocaleString() + " XP")}</td>
+      </tr>`).join("");
+  }
+
+  async function loadLeaderboard() {
+    const sb = getSupabase();
+    if (!sb) { renderLeaderboard(); return; }
+    try {
+      const { data, error } = await sb
+        .from("players")
+        .select("name, course, level, xp_total")
+        .order("xp_total", { ascending: false })
+        .limit(10);
+      if (error || !data || !data.length) { renderLeaderboard(); return; }
+      renderLeaderboard(data.map((p, i) => ({
+        rank:     "#" + String(i + 1).padStart(2, "0"),
+        name:     p.name || "Unknown",
+        initials: (p.name || "?").split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2),
+        stage:    p.course || "—",
+        level:    p.level || 0,
+        xp:       (p.xp_total || 0).toLocaleString() + " XP"
+      })));
+    } catch { renderLeaderboard(); }
   }
 
   /* ==========================================================================
@@ -240,61 +261,83 @@
   });
 
   /* ==========================================================================
-     7. EMAIL & PASSWORD LOGIN HANDLER
+     7. EMAIL & PASSWORD LOGIN  (TASK 5)
+     Uses supabase.auth.signInWithPassword; redirects on success.
      ========================================================================== */
   const loginForm = document.querySelector("#login-form");
   if (loginForm) {
-    const emailInput = loginForm.querySelector("#email");
+    const emailInput    = loginForm.querySelector("#email");
     const passwordInput = loginForm.querySelector("#password");
-    const errorEl = loginForm.querySelector("#email-error, .field-error");
+    const errorEl       = loginForm.querySelector("#email-error, .field-error");
+    const submitBtn     = loginForm.querySelector("[type=submit]");
 
     if (emailInput) {
       emailInput.addEventListener("input", () => {
-        if (errorEl) {
-          errorEl.classList.remove("show");
-          errorEl.style.display = "none";
-        }
+        if (errorEl) { errorEl.classList.remove("show"); errorEl.style.display = "none"; }
         emailInput.removeAttribute("aria-invalid");
       });
     }
 
-    loginForm.addEventListener("submit", (e) => {
+    loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       if (!emailInput) return;
 
-      const email = emailInput.value.trim().toLowerCase();
+      const email    = emailInput.value.trim().toLowerCase();
       const password = passwordInput ? passwordInput.value : "";
-      const isUbEmail = /^[^\s@]+@ub\.edu\.ph$/i.test(email);
 
-      if (!isUbEmail) {
-        if (errorEl) {
-          errorEl.textContent = "Please enter a valid University of Batangas email address (@ub.edu.ph).";
-          errorEl.classList.add("show");
-          errorEl.style.display = "block";
-        }
-        emailInput.setAttribute("aria-invalid", "true");
-        emailInput.focus();
+      // Validate — allow any email for Supabase auth but surface UB-only reminder
+      if (!email) {
+        showFieldError(errorEl, emailInput, "Please enter your email address.");
         return;
       }
-
       if (!password) {
         showToast("Please enter your password, UBian.");
         if (passwordInput) passwordInput.focus();
         return;
       }
 
-      if (errorEl) {
-        errorEl.classList.remove("show");
-        errorEl.style.display = "none";
+      const sb = getSupabase();
+      if (!sb) {
+        showToast("Authentication service unavailable. Please reload.", "error");
+        return;
       }
-      emailInput.removeAttribute("aria-invalid");
 
-      showToast("UB account accepted. Backend authentication will connect in Phase 2!");
+      setLoading(submitBtn, true, "Signing in…");
+      const { data: authData, error } = await sb.auth.signInWithPassword({ email, password });
+      setLoading(submitBtn, false, "Log In");
+
+      if (error) {
+        showFieldError(errorEl, emailInput, "Incorrect email or password. Please try again.");
+        return;
+      }
+
+      // Redirect based on role stored in user_metadata or profiles table
+      await redirectAfterLogin(authData.user);
     });
   }
 
+  function showFieldError(errorEl, inputEl, msg) {
+    if (errorEl) {
+      errorEl.textContent = msg;
+      errorEl.classList.add("show");
+      errorEl.style.display = "block";
+    }
+    if (inputEl) {
+      inputEl.setAttribute("aria-invalid", "true");
+      inputEl.focus();
+    }
+  }
+
+  function setLoading(btn, loading, label) {
+    if (!btn) return;
+    btn.disabled   = loading;
+    btn.textContent = label;
+  }
+
   /* ==========================================================================
-     8. GOOGLE SIGN-IN INTEGRATION
+     8. GOOGLE SIGN-IN INTEGRATION  (TASK 4)
+     After verifying UB email, calls supabase.auth.signInWithIdToken so a
+     real Supabase session is created, then redirects by role.
      ========================================================================== */
   const googleContainer = document.querySelector("#google-signin");
 
@@ -302,7 +345,6 @@
     function showGoogleError(message) {
       const error = document.querySelector("#google-login-error, .google-error");
       if (!error) return;
-
       error.textContent = message;
       error.style.display = "block";
       error.classList.add("show");
@@ -311,33 +353,12 @@
     function clearGoogleError() {
       const error = document.querySelector("#google-login-error, .google-error");
       if (!error) return;
-
       error.textContent = "";
       error.style.display = "none";
       error.classList.remove("show");
     }
 
-    function decodeJwtPayload(token) {
-      try {
-        const parts = token.split(".");
-        if (parts.length !== 3) return null;
-
-        const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-        const json = decodeURIComponent(
-          atob(base64)
-            .split("")
-            .map((char) => "%" + ("00" + char.charCodeAt(0).toString(16)).slice(-2))
-            .join("")
-        );
-
-        return JSON.parse(json);
-      } catch (error) {
-        console.error("Unable to decode Google token:", error);
-        return null;
-      }
-    }
-
-    function handleGoogleLogin(response) {
+    async function handleGoogleLogin(response) {
       clearGoogleError();
 
       if (!response || !response.credential) {
@@ -345,25 +366,49 @@
         return;
       }
 
-      const payload = decodeJwtPayload(response.credential);
-      if (!payload) {
+      // Decode JWT payload to check domain (no library needed)
+      let payload = null;
+      try {
+        const base64 = response.credential.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+        payload = JSON.parse(decodeURIComponent(
+          atob(base64).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join("")
+        ));
+      } catch {
         showGoogleError("Unable to process your Google account.");
         return;
       }
 
-      const hostedDomain = (payload.hd || "").toLowerCase();
       const email = (payload.email || "").toLowerCase();
-      const isUbAccount = hostedDomain === "ub.edu.ph" || email.endsWith("@ub.edu.ph");
-
-      if (!isUbAccount) {
-        showGoogleError("Please sign in using your official University of Batangas Google account (@ub.edu.ph).");
+      if (!email) {
+        showGoogleError("Could not read your email from the Google account.");
         return;
       }
 
-      console.log("Google sign-in successful:", email);
-      showToast("Google account verified. Welcome, UBian!");
+      // ── Create a real Supabase session via the Google ID token ──
+      const sb = getSupabase();
+      if (!sb) {
+        showToast("Authentication service unavailable. Please reload.", "error");
+        return;
+      }
+
+      showToast("Verifying your UB account…");
+
+      const { data: authData, error } = await sb.auth.signInWithIdToken({
+        provider:    "google",
+        token:       response.credential,
+        nonce:       undefined
+      });
+
+      if (error) {
+        console.error("Supabase Google auth error:", error);
+        showGoogleError("Sign-in failed: " + (error.message || "please try again."));
+        return;
+      }
+
+      await redirectAfterLogin(authData.user);
     }
 
+    // Expose for the GSI data-callback attribute
     window.handleGoogleLogin = handleGoogleLogin;
 
     function initializeGoogleSignIn() {
@@ -373,25 +418,25 @@
       }
 
       if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes("YOUR_GOOGLE_CLIENT_ID")) {
-        showGoogleError("Google Sign-In is not configured yet. Add your Google Client ID in main.js.");
+        console.warn("Google Client ID not configured.");
         return;
       }
 
       google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleGoogleLogin,
-        auto_select: false,
+        client_id:           GOOGLE_CLIENT_ID,
+        callback:            handleGoogleLogin,
+        auto_select:         false,
         cancel_on_tap_outside: true
       });
 
       google.accounts.id.renderButton(googleContainer, {
-        type: "standard",
-        theme: "outline",
-        size: "large",
-        text: "signin_with",
-        shape: "rectangular",
+        type:           "standard",
+        theme:          "outline",
+        size:           "large",
+        text:           "signin_with",
+        shape:          "rectangular",
         logo_alignment: "left",
-        width: 360
+        width:          360
       });
     }
 
@@ -402,21 +447,50 @@
     }
   }
 
+  /* --------------------------------------------------------------------------
+     AUTH HELPER: redirect after a successful login by checking user role.
+     Role is stored in user_metadata.role (set via Supabase admin functions)
+     or in the public.profiles table.  Falls back to student.html.
+     -------------------------------------------------------------------------- */
+  async function redirectAfterLogin(user) {
+    if (!user) { window.location.href = "student.html"; return; }
+
+    const metaRole = user.user_metadata?.role;
+
+    const sb = getSupabase();
+    let dbRole = null;
+    if (sb) {
+      try {
+        const { data: profile } = await sb
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single();
+        dbRole = profile?.role ?? null;
+      } catch { /* ignore */ }
+    }
+
+    const finalRole = dbRole || metaRole || "student";
+
+    if (finalRole === "admin") {
+      window.location.href = "admin.html";
+    } else {
+      window.location.href = "student.html";
+    }
+  }
+
   /* ==========================================================================
      9. ADMIN PANEL NAVIGATION
-     Tab switching with aria-current update and smooth panel transition.
      ========================================================================== */
   function initAdminNavigation() {
-    const navItems = document.querySelectorAll(".sidebar-nav .nav-item");
+    const navItems   = document.querySelectorAll(".sidebar-nav .nav-item");
     const viewPanels = document.querySelectorAll(".admin-view-panel");
-
     if (!navItems.length || !viewPanels.length) return;
 
     navItems.forEach((button) => {
       button.addEventListener("click", () => {
         const targetId = button.getAttribute("data-target");
 
-        // Update active state + aria-current on nav buttons
         navItems.forEach((btn) => {
           btn.classList.remove("active");
           btn.removeAttribute("aria-current");
@@ -424,15 +498,14 @@
         button.classList.add("active");
         button.setAttribute("aria-current", "page");
 
-        // Hide all panels, reveal the target
         viewPanels.forEach((panel) => panel.classList.add("hidden"));
 
         if (targetId) {
           const targetPanel = document.getElementById(targetId);
           if (targetPanel) {
             targetPanel.classList.remove("hidden");
-            // Scroll the main container back to top on tab switch
-            targetPanel.closest(".admin-main-container")?.scrollTo({ top: 0, behavior: "smooth" });
+            targetPanel.closest(".admin-main-container")
+              ?.scrollTo({ top: 0, behavior: "smooth" });
           }
         }
       });
@@ -440,74 +513,66 @@
   }
 
   /* ==========================================================================
-     10. ADMIN STUDENT DIRECTORY SEARCH & FILTER
-     Filters by name/email text and optionally shows only non-UBmail rows.
-     Updates the "showing X–Y" pagination info label live.
+     10. ADMIN STUDENT DIRECTORY SEARCH & FILTER  (TASK 6)
+     Debounced input re-queries Supabase for accurate server-side results.
      ========================================================================== */
   function initStudentDirectoryFilter() {
-    const searchInput   = document.querySelector("#student-search-input");
-    const nonUbCheckbox = document.querySelector("#filter-non-ub-checkbox");
-    const tableBody     = document.querySelector("#student-table-body");
-    const paginationInfo = document.querySelector(".pagination-info");
+    const searchInput    = document.querySelector("#student-search-input");
+    const nonUbCheckbox  = document.querySelector("#filter-non-ub-checkbox");
+    if (!searchInput && !nonUbCheckbox) return;
 
-    if (!tableBody || (!searchInput && !nonUbCheckbox)) return;
+    let debounceTimer = null;
 
-    const filterTable = () => {
-      const query        = searchInput ? searchInput.value.toLowerCase().trim() : "";
-      const showNonUbOnly = nonUbCheckbox ? nonUbCheckbox.checked : false;
-      const rows         = tableBody.querySelectorAll("tr");
-      let visibleCount   = 0;
-
-      rows.forEach((row) => {
-        const text      = row.textContent.toLowerCase();
-        const emailCell = row.querySelector(".email-text");
-        const email     = emailCell ? emailCell.textContent.toLowerCase() : "";
-        const isNonUb   = !email.endsWith("@ub.edu.ph");
-
-        const matchesQuery  = query === "" || text.includes(query);
-        const matchesFilter = !showNonUbOnly || isNonUb;
-        const visible       = matchesQuery && matchesFilter;
-
-        row.style.display = visible ? "" : "none";
-        if (visible) visibleCount++;
-      });
-
-      // Update the visible count label when a filter is active
-      if (paginationInfo && (query || showNonUbOnly)) {
-        paginationInfo.innerHTML = `Showing <strong>${visibleCount}</strong> filtered result${visibleCount !== 1 ? "s" : ""}`;
-      } else if (paginationInfo) {
-        paginationInfo.innerHTML = `Showing <strong>1–10</strong> of <strong>2,428</strong> students (Page <strong>1</strong> of <strong>243</strong>)`;
-      }
+    const triggerLoad = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const query      = searchInput    ? searchInput.value.trim()  : "";
+        const nonUbOnly  = nonUbCheckbox  ? nonUbCheckbox.checked     : false;
+        loadSupabaseStudents(query, nonUbOnly);
+      }, 280);
     };
 
-    if (searchInput)   searchInput.addEventListener("input",  filterTable);
-    if (nonUbCheckbox) nonUbCheckbox.addEventListener("change", filterTable);
+    if (searchInput)  searchInput.addEventListener("input",  triggerLoad);
+    if (nonUbCheckbox) nonUbCheckbox.addEventListener("change", triggerLoad);
   }
 
   /* ==========================================================================
      11. ADMIN TICKET ACTIONS
-     Resolve button removes the ticket card with a fade; View Ticket toasts.
      ========================================================================== */
   function initTicketActions() {
     const feed = document.querySelector(".reports-feed");
     if (!feed) return;
 
-    feed.addEventListener("click", (e) => {
+    feed.addEventListener("click", async (e) => {
       const btn = e.target.closest("button");
       if (!btn) return;
 
-      const card = btn.closest(".report-ticket");
+      const card     = btn.closest(".report-ticket");
+      const ticketId = btn.getAttribute("data-ticket-id");
 
       if (btn.classList.contains("btn-gold-sm")) {
-        // Resolve: fade out and remove
+        // Persist resolution to Supabase
+        if (ticketId) {
+          const sb = getSupabase();
+          if (sb) {
+            const { error } = await sb
+              .from("tickets")
+              .update({ status: "resolved" })
+              .eq("id", ticketId);
+            if (error) {
+              showToast("Failed to resolve ticket — please try again.", "error");
+              return;
+            }
+          }
+        }
+
         if (card) {
           card.style.transition = "opacity 0.35s ease, transform 0.35s ease";
-          card.style.opacity = "0";
-          card.style.transform = "translateX(12px)";
+          card.style.opacity    = "0";
+          card.style.transform  = "translateX(12px)";
           setTimeout(() => {
             card.remove();
-            // If feed is now empty, insert the empty state
-            if (feed.querySelectorAll(".report-ticket").length === 0) {
+            if (!feed.querySelector(".report-ticket")) {
               feed.innerHTML = `
                 <div class="admin-card-surface">
                   <div class="empty-state">
@@ -517,38 +582,34 @@
                       </svg>
                     </div>
                     <p class="empty-state-title">All tickets resolved</p>
-                    <p class="empty-state-desc">There are no open game reports right now. Great work keeping the world healthy!</p>
+                    <p class="empty-state-desc">There are no open game reports right now. Great work!</p>
                   </div>
                 </div>`;
             }
           }, 380);
           showToast("Ticket marked as resolved.");
+          loadSupabaseOverview();
         }
-      } else if (btn.classList.contains("btn-outline-dark-sm") && btn.textContent.trim() === "View Ticket") {
+      } else if (btn.classList.contains("btn-outline-dark-sm")) {
         showToast("Full ticket viewer coming in Phase 2.");
       }
     });
   }
 
   /* ==========================================================================
-     12. EMPTY-STATE QUICK-ACTION BUTTONS
-     Toasts for scaffold buttons in Inquiries and Access Control panels.
+     12. EMPTY-STATE QUICK ACTIONS
      ========================================================================== */
   function initEmptyStateActions() {
-    const actions = {
+    const toastMap = {
       "btn-compose-inquiry": "Inquiry composer coming in Phase 2.",
       "btn-manage-roles":    "Role management panel coming in Phase 2.",
       "btn-view-tokens":     "API token manager coming in Phase 2.",
     };
-
-    Object.entries(actions).forEach(([id, message]) => {
+    Object.entries(toastMap).forEach(([id, msg]) => {
       const btn = document.getElementById(id);
-      if (btn) {
-        btn.addEventListener("click", () => showToast(message));
-      }
+      if (btn) btn.addEventListener("click", () => showToast(msg));
     });
 
-    // Archive link in inquiries panel
     const archiveLink = document.querySelector("#view-inquiries .empty-state-action-ghost");
     if (archiveLink) {
       archiveLink.addEventListener("click", (e) => {
@@ -559,24 +620,520 @@
   }
 
   /* ==========================================================================
-     13. LOGOUT HANDLER
+     13. LOGOUT HANDLER  (TASK 8)
+     Signs out of Supabase session and redirects to login.html.
      ========================================================================== */
   function initLogout() {
     document.querySelectorAll("#logout-btn, #admin-logout-btn").forEach((btn) => {
-      btn.addEventListener("click", () => showToast("Logged out successfully."));
+      btn.addEventListener("click", async () => {
+        const sb = getSupabase();
+        if (sb) {
+          try { await sb.auth.signOut(); } catch { /* best-effort */ }
+        }
+        window.location.href = "login.html";
+      });
     });
+  }
+
+  /* ==========================================================================
+     14. SUPABASE LIVE DATA — OVERVIEW, STUDENTS, TICKETS
+     ========================================================================== */
+
+  async function loadSupabaseOverview() {
+    const sb = getSupabase();
+    if (!sb) return;
+
+    try {
+      const [
+        { count: activeCount },
+        { count: nonUbCount  },
+        { count: ticketCount }
+      ] = await Promise.all([
+        sb.from("players").select("*", { count: "exact", head: true }).eq("active", true),
+        sb.from("players").select("*", { count: "exact", head: true }).not("email", "like", "%@ub.edu.ph"),
+        sb.from("tickets").select("*", { count: "exact", head: true }).eq("status", "open")
+      ]);
+
+      const statValues = document.querySelectorAll(".admin-metrics-row .stat-value");
+      if (statValues.length >= 3) {
+        if (activeCount  !== null) statValues[0].textContent = Number(activeCount).toLocaleString();
+        if (nonUbCount   !== null) statValues[1].textContent = Number(nonUbCount).toLocaleString();
+        if (ticketCount  !== null) statValues[2].textContent = Number(ticketCount).toLocaleString();
+      }
+    } catch (err) {
+      console.error("Overview fetch error:", err);
+    }
+  }
+
+  async function loadSupabaseStudents(searchQuery = "", nonUbOnly = false) {
+    const sb        = getSupabase();
+    const tableBody = document.querySelector("#student-table-body");
+    if (!tableBody) return;
+
+    // Show loading skeleton
+    tableBody.innerHTML = `
+      <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted);">
+        Loading students…
+      </td></tr>`;
+
+    const paginationInfo = document.querySelector(".pagination-info");
+
+    if (!sb) {
+      // No Supabase available — keep the static rows already in the HTML
+      tableBody.innerHTML = "";
+      return;
+    }
+
+    try {
+      let query = sb.from("players").select("*", { count: "exact" });
+
+      if (searchQuery) {
+        query = query.or(`name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`);
+      }
+      if (nonUbOnly) {
+        query = query.not("email", "like", "%@ub.edu.ph");
+      }
+
+      // Limit to first 50 for the paginated display
+      query = query.order("name", { ascending: true }).range(0, 49);
+
+      const { data: players, count, error } = await query;
+
+      if (error) {
+        console.error("Students fetch error:", error);
+        tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--error-color);">
+          Error loading students. Please refresh.</td></tr>`;
+        return;
+      }
+
+      if (paginationInfo) {
+        const shown = players ? players.length : 0;
+        const total = count  ?? shown;
+        paginationInfo.innerHTML = searchQuery || nonUbOnly
+          ? `Showing <strong>${shown}</strong> filtered result${shown !== 1 ? "s" : ""}`
+          : `Showing <strong>1–${shown}</strong> of <strong>${total.toLocaleString()}</strong> students`;
+      }
+
+      if (!players || players.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted);">
+          No students found matching your criteria.</td></tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = players.map(player => {
+        const isUBMail    = player.email && player.email.toLowerCase().endsWith("@ub.edu.ph");
+        const emailBadge  = isUBMail
+          ? '<span class="badge-verified-ub">UB Mail</span>'
+          : '<span class="badge-warning-ext">External Email</span>';
+        const statusClass = player.active ? "active" : "inactive";
+        const statusText  = player.active ? "Active" : "Inactive";
+        const initials    = (player.name || "P")
+          .split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
+
+        return `
+          <tr>
+            <td>
+              <div class="player-col">
+                <div class="avatar-sm-gold">${initials}</div>
+                <span class="player-name">${player.name || player.username || "—"}</span>
+              </div>
+            </td>
+            <td>
+              <div class="email-col">
+                <span class="email-text">${player.email || "—"}</span>
+                ${emailBadge}
+              </div>
+            </td>
+            <td><span class="badge-course">${player.course || "N/A"}</span></td>
+            <td>
+              <span class="status-dot ${statusClass}" aria-hidden="true"></span>
+              ${statusText}
+            </td>
+            <td class="text-right"><a href="#" class="link-action">View details &rarr;</a></td>
+          </tr>`;
+      }).join("");
+
+    } catch (err) {
+      console.error("Students query error:", err);
+      tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--error-color);">
+        Unexpected error. Please refresh.</td></tr>`;
+    }
+  }
+
+  async function loadSupabaseTickets() {
+    const sb   = getSupabase();
+    const feed = document.querySelector(".reports-feed");
+    if (!feed) return;
+    if (!sb)   return; // Keep hardcoded tickets if no Supabase
+
+    try {
+      const { data: tickets, error } = await sb
+        .from("tickets")
+        .select("*")
+        .eq("status", "open")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Tickets fetch error:", error);
+        return;
+      }
+
+      if (!tickets || tickets.length === 0) {
+        feed.innerHTML = `
+          <div class="admin-card-surface">
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+              <p class="empty-state-title">All tickets resolved</p>
+              <p class="empty-state-desc">There are no open game reports right now. Great work!</p>
+            </div>
+          </div>`;
+        return;
+      }
+
+      feed.innerHTML = "";
+      tickets.forEach(ticket => {
+        const timeStr   = ticket.created_at
+          ? timeSince(new Date(ticket.created_at))
+          : "Recently";
+        const tag       = ticket.tag || "Technical Issue";
+        const isAmber   = tag.toLowerCase().includes("feedback");
+        const tagStyle  = isAmber
+          ? 'style="background:rgba(245,158,11,0.1);color:#b45309;border-color:rgba(245,158,11,0.3);"'
+          : "";
+        const borderCol = isAmber ? "#b45309" : "#dc2626";
+
+        const card = document.createElement("div");
+        card.className = "admin-card-surface report-ticket";
+        card.style.cssText = `border-left:4px solid ${borderCol};padding:22px;margin-bottom:15px;`;
+        card.innerHTML = `
+          <div class="ticket-header">
+            <span class="badge-ticket-tech" ${tagStyle}>${tag}</span>
+            <span class="ticket-time meta-timestamp">${timeStr}</span>
+          </div>
+          <h3 class="ticket-title" style="margin-top:12px;margin-bottom:14px;">${ticket.title || "Untitled ticket"}</h3>
+          <div class="ticket-footer">
+            <p class="ticket-reporter">Reported by <strong>${ticket.user_name || "Unknown"}</strong></p>
+            <div class="ticket-actions">
+              <button class="btn-outline-dark-sm">View Ticket</button>
+              <button class="btn-gold-sm" data-ticket-id="${ticket.id}">Resolve</button>
+            </div>
+          </div>`;
+        feed.appendChild(card);
+      });
+
+    } catch (err) {
+      console.error("Tickets query error:", err);
+    }
+  }
+
+  /** Human-readable relative time ("5 mins ago", "2 hrs ago"). */
+  function timeSince(date) {
+    const secs = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (secs < 60)   return "just now";
+    if (secs < 3600) return Math.floor(secs / 60) + " mins ago";
+    if (secs < 86400) return Math.floor(secs / 3600) + " hrs ago";
+    return Math.floor(secs / 86400) + " days ago";
+  }
+
+  /* ==========================================================================
+     15. SESSION GUARD + ROLE-BASED PAGE PROTECTION
+     Hides body until role is confirmed to prevent flash of wrong content.
+     ========================================================================== */
+  async function checkSessionGuard() {
+    const page = window.location.pathname.split("/").pop() || "index.html";
+    const isAdmin   = page === "admin.html";
+    const isStudent = page === "student.html";
+    if (!isAdmin && !isStudent) return;
+
+    // Hide body immediately — prevents flash of wrong page content
+    document.body.style.visibility = "hidden";
+
+    const sb = getSupabase();
+    if (!sb) { document.body.style.visibility = ""; return; }
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    // Determine role: profiles table first, then user_metadata, then email fallback
+    let role = "student";
+    const email = (session.user.email || "").toLowerCase();
+
+    // user_metadata set at sign-up
+    const metaRole = session.user.user_metadata?.role;
+    if (metaRole === "admin") role = "admin";
+
+    // profiles table (most reliable)
+    try {
+      const { data: profile } = await sb
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .single();
+      if (profile?.role) role = profile.role;
+    } catch { /* ignore */ }
+
+    // Enforce routing
+    if (isAdmin && role !== "admin") {
+      window.location.href = "student.html";
+      return;
+    }
+    if (isStudent && role === "admin") {
+      window.location.href = "admin.html";
+      return;
+    }
+
+    // Correct page — reveal body
+    document.body.style.visibility = "";
+  }
+
+  /* ==========================================================================
+     16. STUDENT — COMPOSE INQUIRY
+     Posts to api/submit-inquiry.php
+     ========================================================================== */
+  function initComposeInquiry() {
+    const modal      = document.getElementById("modal-inquiry");
+    const openBtn    = document.getElementById("btn-open-inquiry");
+    const closeBtn   = document.getElementById("btn-close-inquiry");
+    const form       = document.getElementById("form-inquiry");
+    if (!modal || !form) return;
+
+    const openModal  = () => { modal.style.display = "flex"; modal.setAttribute("aria-hidden","false"); };
+    const closeModal = () => { modal.style.display = "none"; modal.setAttribute("aria-hidden","true");  form.reset(); };
+
+    if (openBtn)  openBtn.addEventListener("click", openModal);
+    if (closeBtn) closeBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      const sb        = getSupabase();
+      const submitBtn = form.querySelector("[type=submit]");
+      setLoading(submitBtn, true, "Sending…");
+
+      const name    = form.querySelector("#inq-name")?.value.trim()    || "";
+      const email   = form.querySelector("#inq-email")?.value.trim()   || "";
+      const message = form.querySelector("#inq-message")?.value.trim() || "";
+
+      let success = false;
+
+      // Try Supabase direct insert first
+      if (sb) {
+        const { error } = await sb.from("inquiries").insert({ name, email, message });
+        success = !error;
+        if (error) console.error("Inquiry insert error:", error);
+      }
+
+      // Fallback: PHP endpoint
+      if (!success) {
+        try {
+          const res = await fetch("api/submit-inquiry.php", {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({ name, email, message })
+          });
+          success = res.ok;
+        } catch (err) { console.error("PHP fallback error:", err); }
+      }
+
+      setLoading(submitBtn, false, "Send Inquiry");
+      if (success) {
+        showToast("Inquiry sent! We'll get back to you soon.");
+        closeModal();
+      } else {
+        showToast("Failed to send inquiry — please try again.", "error");
+      }
+    });
+  }
+
+  /* ==========================================================================
+     17. STUDENT — REPORT BUG / FEEDBACK
+     Posts to api/submit-ticket.php
+     ========================================================================== */
+  function initReportBug() {
+    const modal    = document.getElementById("modal-report");
+    const openBtn  = document.getElementById("btn-open-report");
+    const closeBtn = document.getElementById("btn-close-report");
+    const form     = document.getElementById("form-report");
+    if (!modal || !form) return;
+
+    const openModal  = () => { modal.style.display = "flex"; modal.setAttribute("aria-hidden","false"); };
+    const closeModal = () => { modal.style.display = "none"; modal.setAttribute("aria-hidden","true");  form.reset(); };
+
+    if (openBtn)  openBtn.addEventListener("click", openModal);
+    if (closeBtn) closeBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      const sb        = getSupabase();
+      const submitBtn = form.querySelector("[type=submit]");
+      setLoading(submitBtn, true, "Submitting…");
+
+      const title       = form.querySelector("#rep-title")?.value.trim()       || "";
+      const description = form.querySelector("#rep-desc")?.value.trim()        || "";
+      const tag         = form.querySelector("#rep-tag")?.value                || "Technical Issue";
+
+      // Get current player id if available
+      let player_id = null;
+      if (sb) {
+        const { data: { session } } = await sb.auth.getSession();
+        if (session) {
+          const { data: p } = await sb
+            .from("players").select("id").eq("user_id", session.user.id).single();
+          if (p) player_id = p.id;
+        }
+      }
+
+      let success = false;
+
+      if (sb) {
+        const payload = { title, description, tag, status: "open" };
+        if (player_id) payload.player_id = player_id;
+        const { error } = await sb.from("tickets").insert(payload);
+        success = !error;
+        if (error) console.error("Ticket insert error:", error);
+      }
+
+      if (!success) {
+        try {
+          const res = await fetch("api/submit-ticket.php", {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({ title, description, tag, player_id })
+          });
+          success = res.ok;
+        } catch (err) { console.error("PHP fallback error:", err); }
+      }
+
+      setLoading(submitBtn, false, "Submit Report");
+      if (success) {
+        showToast("Report submitted! Our team will review it.");
+        closeModal();
+      } else {
+        showToast("Failed to submit report — please try again.", "error");
+      }
+    });
+  }
+
+  /* ==========================================================================
+     18. ADMIN — SCHOOL INQUIRIES PANEL
+     ========================================================================== */
+  async function loadSupabaseInquiries() {
+    const container = document.querySelector("#view-inquiries .inquiries-feed");
+    if (!container) return;
+    const sb = getSupabase();
+    if (!sb) return;
+
+    container.innerHTML = `<div style="padding:24px;color:var(--text-muted);text-align:center;">Loading inquiries…</div>`;
+
+    try {
+      const { data: inquiries, error } = await sb
+        .from("inquiries")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) { console.error("Inquiries fetch:", error); return; }
+
+      if (!inquiries || inquiries.length === 0) {
+        container.innerHTML = `
+          <div class="admin-card-surface">
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
+              <p class="empty-state-title">No new inquiries</p>
+              <p class="empty-state-desc">When students submit inquiries they'll appear here.</p>
+            </div>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = inquiries.map(inq => {
+        const time    = inq.created_at ? timeSince(new Date(inq.created_at)) : "Recently";
+        const statusClass = inq.status === "resolved" ? "positive" : "warning";
+        const statusLabel = inq.status === "resolved" ? "Resolved" : "Open";
+        return `
+          <div class="admin-card-surface report-ticket" style="border-left:4px solid var(--gold-400);padding:22px;margin-bottom:14px;" data-inq-id="${inq.id}">
+            <div class="ticket-header">
+              <span class="badge-ticket-tech" style="background:rgba(212,175,55,0.1);color:var(--gold-500);border-color:rgba(212,175,55,0.3);">School Inquiry</span>
+              <span class="ticket-time meta-timestamp">${time}</span>
+            </div>
+            <p style="margin:10px 0 4px;font-weight:700;color:var(--text-primary);">${inq.name || "Anonymous"}</p>
+            <p style="margin:0 0 12px;font-size:0.85rem;color:var(--text-muted);">${inq.email || ""}</p>
+            <p style="font-size:0.93rem;color:var(--text-secondary);margin-bottom:16px;">${inq.message || ""}</p>
+            <div class="ticket-footer">
+              <span class="stat-trend ${statusClass}" style="font-size:0.75rem;">${statusLabel}</span>
+              <div class="ticket-actions">
+                ${inq.status !== "resolved"
+                  ? `<button class="btn-gold-sm" data-resolve-inq="${inq.id}">Mark Resolved</button>`
+                  : `<span style="font-size:0.82rem;color:var(--text-muted);">✓ Resolved</span>`
+                }
+              </div>
+            </div>
+          </div>`;
+      }).join("");
+
+      // Wire resolve buttons
+      container.addEventListener("click", async e => {
+        const btn = e.target.closest("[data-resolve-inq]");
+        if (!btn) return;
+        const inqId = btn.getAttribute("data-resolve-inq");
+        const { error } = await sb.from("inquiries").update({ status: "resolved" }).eq("id", inqId);
+        if (!error) {
+          showToast("Inquiry marked as resolved.");
+          loadSupabaseInquiries();
+          loadSupabaseOverview();
+        } else {
+          showToast("Failed to update inquiry.", "error");
+        }
+      });
+
+    } catch (err) { console.error("Inquiries query error:", err); }
   }
 
   /* ==========================================================================
      DOM INITIALIZERS
      ========================================================================== */
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
+    // Session guard (redirects before anything renders)
+    await checkSessionGuard();
+
     updateActiveNav();
-    renderLeaderboard();
-    initAdminNavigation();
-    initStudentDirectoryFilter();
-    initTicketActions();
-    initEmptyStateActions();
+
+    // Leaderboard (index.html)
+    if (document.querySelector(".leaderboard-table tbody")) {
+      await loadLeaderboard();
+    }
+
+    // Admin dashboard
+    if (document.querySelector(".admin-layout")) {
+      initAdminNavigation();
+      initTicketActions();
+      initEmptyStateActions();
+      await Promise.all([
+        loadSupabaseOverview(),
+        loadSupabaseStudents(),
+        loadSupabaseTickets(),
+        loadSupabaseInquiries()
+      ]);
+      initStudentDirectoryFilter();
+    }
+
+    // Student portal
+    if (document.querySelector(".student-canvas")) {
+      initComposeInquiry();
+      initReportBug();
+    }
+
     initLogout();
   });
 })();

@@ -175,6 +175,87 @@
 
   </main>
 
+  <!-- ═══════════════════════════════════════════
+       FLOATING ACTION BUTTONS (student quick actions)
+  ════════════════════════════════════════════ -->
+  <div style="position:fixed;bottom:28px;right:28px;display:flex;flex-direction:column;gap:12px;z-index:200;">
+    <button id="btn-open-report" class="btn-gold-lg" style="padding:12px 20px;font-size:0.82rem;gap:8px;box-shadow:0 6px 20px rgba(128,0,0,0.25);" title="Report a bug or give feedback">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Report Bug
+    </button>
+    <button id="btn-open-inquiry" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;background:#fff;color:var(--maroon-primary);border:1.5px solid var(--maroon-primary);border-radius:var(--radius-sm);font-size:0.82rem;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.1);transition:all 0.2s ease;" title="Send a school inquiry">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Ask a Question
+    </button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       MODAL: COMPOSE INQUIRY
+  ════════════════════════════════════════════ -->
+  <div id="modal-inquiry" role="dialog" aria-modal="true" aria-labelledby="inq-modal-title" aria-hidden="true"
+       style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center;padding:24px;">
+    <div style="background:#fff;border-radius:var(--radius-lg);padding:36px;width:100%;max-width:480px;box-shadow:0 24px 48px rgba(0,0,0,0.2);position:relative;">
+      <button id="btn-close-inquiry" aria-label="Close"
+              style="position:absolute;top:16px;right:16px;background:transparent;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-muted);">✕</button>
+      <h2 id="inq-modal-title" style="font-family:var(--font-display);font-size:1.5rem;margin-bottom:6px;">Ask a Question</h2>
+      <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:24px;">Send an inquiry to the Brahman Origins team or school administration.</p>
+      <form id="form-inquiry" novalidate>
+        <div class="field">
+          <label for="inq-name">Your Name</label>
+          <input type="text" id="inq-name" placeholder="Juan dela Cruz" required>
+        </div>
+        <div class="field">
+          <label for="inq-email">Email Address</label>
+          <input type="email" id="inq-email" placeholder="juan@example.com" required>
+        </div>
+        <div class="field" style="margin-bottom:20px;">
+          <label for="inq-message" style="display:block;font-size:0.8rem;font-weight:700;color:var(--text-primary);margin-bottom:6px;">Your Question</label>
+          <textarea id="inq-message" rows="4" required
+                    style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);font:inherit;resize:vertical;"
+                    placeholder="What would you like to know?"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Send Inquiry</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       MODAL: REPORT BUG / FEEDBACK
+  ════════════════════════════════════════════ -->
+  <div id="modal-report" role="dialog" aria-modal="true" aria-labelledby="rep-modal-title" aria-hidden="true"
+       style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center;padding:24px;">
+    <div style="background:#fff;border-radius:var(--radius-lg);padding:36px;width:100%;max-width:480px;box-shadow:0 24px 48px rgba(0,0,0,0.2);position:relative;">
+      <button id="btn-close-report" aria-label="Close"
+              style="position:absolute;top:16px;right:16px;background:transparent;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-muted);">✕</button>
+      <h2 id="rep-modal-title" style="font-family:var(--font-display);font-size:1.5rem;margin-bottom:6px;">Report an Issue</h2>
+      <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:24px;">Found a bug or have feedback about the game? Let us know.</p>
+      <form id="form-report" novalidate>
+        <div class="field">
+          <label for="rep-tag" style="display:block;font-size:0.8rem;font-weight:700;color:var(--text-primary);margin-bottom:6px;">Category</label>
+          <select id="rep-tag"
+                  style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);font:inherit;background:#fff;color:var(--text-primary);">
+            <option value="Technical Issue">Technical Issue (crash, error)</option>
+            <option value="Gameplay Feedback">Gameplay Feedback</option>
+            <option value="XP / Progress Bug">XP / Progress Bug</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="rep-title">Short Title</label>
+          <input type="text" id="rep-title" placeholder="e.g. Game crashed in Old Library" required>
+        </div>
+        <div class="field" style="margin-bottom:20px;">
+          <label for="rep-desc" style="display:block;font-size:0.8rem;font-weight:700;color:var(--text-primary);margin-bottom:6px;">Description</label>
+          <textarea id="rep-desc" rows="4"
+                    style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);font:inherit;resize:vertical;"
+                    placeholder="Describe what happened and how to reproduce it…"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Submit Report</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="main.js"></script>
 </body>
 </html>
