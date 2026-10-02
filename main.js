@@ -1100,6 +1100,202 @@ function getSupabase() {
   }
 
   /* ==========================================================================
+     19. STUDENT PORTAL — LIVE PROFILE LOADER
+     Queries the players table by the authenticated user's ID or email,
+     then injects real data into every tagged element on student.html.
+     ========================================================================== */
+  async function loadStudentProfile() {
+    const sb = getSupabase();
+    if (!sb) return;
+
+    // Get current session
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+
+    const userId = session.user.id;
+    const email  = (session.user.email || "").toLowerCase();
+
+    // ── 1. Fetch player row ──────────────────────────────────────────────────
+    let player = null;
+    try {
+      // Try matching by linked user_id first, then fall back to email
+      let { data, error } = await sb
+        .from("players")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
+
+      if (error || !data) {
+        const res = await sb
+          .from("players")
+          .select("*")
+          .eq("email", email)
+          .single();
+        data = res.data;
+      }
+      player = data;
+    } catch { /* no player row yet — use session data */ }
+
+    // ── 2. Compute rank (position in xp_total leaderboard) ──────────────────
+    let rank = "—";
+    if (player) {
+      try {
+        const { count } = await sb
+          .from("players")
+          .select("*", { count: "exact", head: true })
+          .gt("xp_total", player.xp_total ?? 0);
+        rank = "#" + ((count ?? 0) + 1);
+      } catch { /* ignore */ }
+    }
+
+    // ── 3. Calculate XP progress to next level ───────────────────────────────
+    // Simple formula: each level needs level * 500 XP
+    const level   = player?.level    ?? 1;
+    const xpTotal = player?.xp_total ?? 0;
+    const xpForCurrentLevel = (level - 1) * 500;
+    const xpForNextLevel    = level * 500;
+    const xpIntoLevel       = Math.max(0, xpTotal - xpForCurrentLevel);
+    const xpNeeded          = xpForNextLevel - xpForCurrentLevel;
+    const xpPercent         = Math.min(100, Math.round((xpIntoLevel / xpNeeded) * 100));
+
+    // ── 4. Title based on level ──────────────────────────────────────────────
+    function getLevelTitle(lvl) {
+      if (lvl < 5)  return "New Recruit";
+      if (lvl < 10) return "Campus Explorer";
+      if (lvl < 20) return "Quest Seeker";
+      if (lvl < 30) return "Campus Guardian";
+      if (lvl < 40) return "Elite Scholar";
+      return "Brahman Legend";
+    }
+
+    // ── 5. Derive display values ─────────────────────────────────────────────
+    const fullName   = player?.name  || session.user.user_metadata?.full_name || email;
+    const firstName  = fullName.split(" ")[0];
+    const initials   = fullName.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
+    const playerEmail = player?.email || email;
+    const points     = (player?.xp_total ?? 0).toLocaleString();
+    const questCount = player?.quests_completed ?? 0;
+    const title      = getLevelTitle(level);
+    const course     = player?.course || "";
+
+    // ── 6. Inject into DOM ───────────────────────────────────────────────────
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+    set("student-first-name",  firstName);
+    set("student-full-name",   fullName);
+    set("student-email",       playerEmail);
+    set("student-level-badge", `LEVEL ${level} · ${title.toUpperCase()}${course ? " · " + course : ""}`);
+    set("student-xp-value",    `${xpIntoLevel.toLocaleString()} / ${xpNeeded.toLocaleString()} XP`);
+    set("student-rank",        rank);
+    set("student-points",      points);
+    set("student-quests",      questCount.toString());
+
+    // Avatar initials
+    ["student-avatar-header", "student-avatar-card"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = initials;
+    });
+
+    // XP progress bar
+    const bar = document.getElementById("student-xp-bar");
+    if (bar) bar.style.width = xpPercent + "%";
+
+    // ── 7. Active quests ─────────────────────────────────────────────────────
+    const questList = document.getElementById("student-quest-list");
+    if (questList) {
+      let quests = [];
+      try {
+        const { data } = await sb
+          .from("quests")
+          .select("title, description, progress")
+          .eq("player_id", player?.id)
+          .eq("status", "active")
+          .order("updated_at", { ascending: false })
+          .limit(4);
+        quests = data || [];
+      } catch { /* quests table may not exist yet */ }
+
+      if (quests.length > 0) {
+        questList.innerHTML = quests.map(q => `
+          <li class="quest-item">
+            <div class="quest-info">
+              <span class="quest-title">${q.title}</span>
+              <span class="quest-desc">${q.description || ""}</span>
+            </div>
+            <span class="badge-gold-pill">${q.progress ?? 0}%</span>
+          </li>`).join("");
+      } else {
+        // Fallback — generate dynamic quests from player data
+        const dynamicQuests = [];
+        if (xpPercent < 100) {
+          dynamicQuests.push({
+            title: "Level Up",
+            desc:  `Earn ${(xpNeeded - xpIntoLevel).toLocaleString()} more XP to reach Level ${level + 1}`,
+            pct:   xpPercent
+          });
+        }
+        dynamicQuests.push({
+          title: "Climb the Leaderboard",
+          desc:  `You are currently ranked ${rank}`,
+          pct:   Math.min(99, Math.round((xpTotal / 20000) * 100))
+        });
+
+        questList.innerHTML = dynamicQuests.map(q => `
+          <li class="quest-item">
+            <div class="quest-info">
+              <span class="quest-title">${q.title}</span>
+              <span class="quest-desc">${q.desc}</span>
+            </div>
+            <span class="badge-gold-pill">${q.pct}%</span>
+          </li>`).join("");
+      }
+    }
+
+    // ── 8. Recent activity ───────────────────────────────────────────────────
+    const activityFeed = document.getElementById("student-activity-feed");
+    if (activityFeed) {
+      let activity = [];
+      try {
+        const { data } = await sb
+          .from("activity_log")
+          .select("title, meta, xp_gain, created_at")
+          .eq("player_id", player?.id)
+          .order("created_at", { ascending: false })
+          .limit(5);
+        activity = data || [];
+      } catch { /* activity_log table may not exist yet */ }
+
+      if (activity.length > 0) {
+        activityFeed.innerHTML = activity.map(a => `
+          <li class="activity-item">
+            <div class="activity-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+            </div>
+            <div class="activity-details">
+              <span class="activity-title">${a.title}</span>
+              <span class="activity-meta">${a.meta || ""} · ${timeSince(new Date(a.created_at))}</span>
+            </div>
+            ${a.xp_gain ? `<span class="xp-gain-badge">+${a.xp_gain} XP</span>` : ""}
+          </li>`).join("");
+      } else {
+        // Placeholder when no activity log exists
+        activityFeed.innerHTML = `
+          <li class="activity-item" style="justify-content:center;">
+            <span style="color:var(--text-muted);font-size:0.9rem;">No recent activity yet — start playing to earn XP!</span>
+          </li>`;
+      }
+    }
+
+    // ── 9. Pre-fill inquiry form with known name/email ───────────────────────
+    const inqName  = document.getElementById("inq-name");
+    const inqEmail = document.getElementById("inq-email");
+    if (inqName  && !inqName.value)  inqName.value  = fullName;
+    if (inqEmail && !inqEmail.value) inqEmail.value = playerEmail;
+  }
+
+  /* ==========================================================================
      DOM INITIALIZERS
      ========================================================================== */
   document.addEventListener("DOMContentLoaded", async () => {
@@ -1131,6 +1327,7 @@ function getSupabase() {
     if (document.querySelector(".student-canvas")) {
       initComposeInquiry();
       initReportBug();
+      await loadStudentProfile();
     }
 
     initLogout();

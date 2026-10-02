@@ -29,7 +29,7 @@
           <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
         </svg>
       </button>
-      <div class="user-avatar-circle">KA</div>
+      <div class="user-avatar-circle" id="student-avatar-header">KA</div>
       <button class="btn-outline-sm" id="logout-btn">Logout</button>
       <a href="admin.html" class="btn-mode-switch">Switch to Admin Console ↔</a>
     </div>
@@ -45,7 +45,7 @@
           <span class="dot-live"></span>
           PLAYER PROFILE · ONLINE
         </div>
-        <h1 class="font-display hero-title">Welcome back, Kai.</h1>
+        <h1 class="font-display hero-title">Welcome back, <span id="student-first-name">Kai</span>.</h1>
         <p class="hero-subtitle">Continue your journey through the University of Batangas.</p>
       </div>
       <div class="hero-action">
@@ -64,20 +64,20 @@
     <!-- Main Player Profile Card -->
     <section class="card-surface player-profile-card">
       <div class="profile-main-info">
-        <div class="profile-avatar-lg">KA</div>
+        <div class="profile-avatar-lg" id="student-avatar-card">KA</div>
         <div class="profile-meta">
-          <span class="badge-level">LEVEL 24 · CAMPUS GUARDIAN</span>
-          <h2 class="profile-name">Kai Alvarado</h2>
-          <span class="profile-email">kai.alvarado@ub.edu.ph</span>
+          <span class="badge-level" id="student-level-badge">LEVEL 24 · CAMPUS GUARDIAN</span>
+          <h2 class="profile-name" id="student-full-name">Kai Alvarado</h2>
+          <span class="profile-email" id="student-email">kai.alvarado@ub.edu.ph</span>
         </div>
       </div>
       <div class="profile-xp-widget">
         <div class="xp-labels">
           <span class="xp-title">Level Progress</span>
-          <span class="xp-value">2,840 / 3,500 XP</span>
+          <span class="xp-value" id="student-xp-value">2,840 / 3,500 XP</span>
         </div>
         <div class="progress-bar-track">
-          <div class="progress-bar-fill" style="width: 81%;"></div>
+          <div class="progress-bar-fill" id="student-xp-bar" style="width: 81%;"></div>
         </div>
       </div>
     </section>
@@ -92,17 +92,17 @@
         <section class="card-surface metrics-card">
           <div class="metric-col">
             <span class="metric-label">RANK</span>
-            <span class="metric-value font-display">#18</span>
+            <span class="metric-value font-display" id="student-rank">#18</span>
           </div>
           <div class="metric-divider"></div>
           <div class="metric-col">
             <span class="metric-label">POINTS</span>
-            <span class="metric-value font-display">12,420</span>
+            <span class="metric-value font-display" id="student-points">12,420</span>
           </div>
           <div class="metric-divider"></div>
           <div class="metric-col">
             <span class="metric-label">QUESTS</span>
-            <span class="metric-value font-display">47</span>
+            <span class="metric-value font-display" id="student-quests">47</span>
           </div>
         </section>
 
@@ -112,22 +112,7 @@
             <h3 class="card-title font-display">Active quests</h3>
             <span class="badge-subtle">3 available</span>
           </div>
-          <ul class="quest-list">
-            <li class="quest-item">
-              <div class="quest-info">
-                <span class="quest-title">Map the Campus</span>
-                <span class="quest-desc">Explore 4 more districts</span>
-              </div>
-              <span class="badge-gold-pill">60%</span>
-            </li>
-            <li class="quest-item">
-              <div class="quest-info">
-                <span class="quest-title">Rise through the ranks</span>
-                <span class="quest-desc">Earn 580 more points</span>
-              </div>
-              <span class="badge-gold-pill">82%</span>
-            </li>
-          </ul>
+          <ul class="quest-list" id="student-quest-list"></ul>
         </section>
 
       </div>
@@ -141,32 +126,7 @@
             <h3 class="card-title font-display">Recent activity</h3>
             <a href="#" class="link-subtle">View all</a>
           </div>
-          <ul class="activity-feed">
-            <li class="activity-item">
-              <div class="activity-icon-box">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-              </div>
-              <div class="activity-details">
-                <span class="activity-title">Guardian of the Old Library</span>
-                <span class="activity-meta">Quest completed · 2 hours ago</span>
-              </div>
-              <span class="xp-gain-badge">+280 XP</span>
-            </li>
-            <li class="activity-item">
-              <div class="activity-icon-box">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                </svg>
-              </div>
-              <div class="activity-details">
-                <span class="activity-title">Ancient Skills I</span>
-                <span class="activity-meta">New skill unlocked · Yesterday</span>
-              </div>
-              <span class="xp-gain-badge">+150 XP</span>
-            </li>
-          </ul>
+          <ul class="activity-feed" id="student-activity-feed"></ul>
         </section>
 
       </div>
