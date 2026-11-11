@@ -28,7 +28,8 @@ function getSupabase() {
      CONFIGURATIONS
      ========================================================================== */
   const GAME_URL = null; // Set to Unity WebGL build URL when deployed
-    const GOOGLE_CLIENT_ID = "964623719325-98f01kp5ooeeftst9hulhsou4oftukfs.apps.googleusercontent.com";
+  const GOOGLE_CLIENT_ID = "964623719325-98f01kp5ooeeftst9hulhsou4oftukfs.apps.googleusercontent.com";
+
   /* ==========================================================================
      1. MOBILE NAVIGATION
      ========================================================================== */
@@ -183,7 +184,6 @@ function getSupabase() {
     const msgEl = toast.querySelector(".toast-msg");
     if (msgEl) msgEl.textContent = message;
 
-    // Colour the dot for error toasts
     const dot = toast.querySelector(".dot");
     if (dot) dot.style.background = type === "error" ? "#dc2626" : "";
 
@@ -194,7 +194,6 @@ function getSupabase() {
 
   /* ==========================================================================
      5. DYNAMIC LEADERBOARD RENDERER
-     Populated from Supabase when available; falls back to mock data.
      ========================================================================== */
   const mockLeaderboardData = [
     { rank: "#01", name: "Miguel Santos",    initials: "MS", stage: "College (BSIT)",     level: 42, xp: "18,940 XP" },
@@ -228,9 +227,11 @@ function getSupabase() {
     const sb = getSupabase();
     if (!sb) { renderLeaderboard(); return; }
     try {
+      // UPDATED FROM "players" TO "profiles" (filtered for students)
       const { data, error } = await sb
-        .from("players")
+        .from("profiles")
         .select("name, course, level, xp_total")
+        .neq("role", "admin")
         .order("xp_total", { ascending: false })
         .limit(10);
       if (error || !data || !data.length) { renderLeaderboard(); return; }
@@ -260,8 +261,7 @@ function getSupabase() {
   });
 
   /* ==========================================================================
-     7. EMAIL & PASSWORD LOGIN  (TASK 5)
-     Uses supabase.auth.signInWithPassword; redirects on success.
+     7. EMAIL & PASSWORD LOGIN
      ========================================================================== */
   const loginForm = document.querySelector("#login-form");
   if (loginForm) {
@@ -284,7 +284,6 @@ function getSupabase() {
       const email    = emailInput.value.trim().toLowerCase();
       const password = passwordInput ? passwordInput.value : "";
 
-      // Validate — allow any email for Supabase auth but surface UB-only reminder
       if (!email) {
         showFieldError(errorEl, emailInput, "Please enter your email address.");
         return;
@@ -310,7 +309,6 @@ function getSupabase() {
         return;
       }
 
-      // Redirect based on role stored in user_metadata or profiles table
       await redirectAfterLogin(authData.user);
     });
   }
@@ -334,9 +332,7 @@ function getSupabase() {
   }
 
   /* ==========================================================================
-     8. GOOGLE SIGN-IN INTEGRATION  (TASK 4)
-     After verifying UB email, calls supabase.auth.signInWithIdToken so a
-     real Supabase session is created, then redirects by role.
+     8. GOOGLE SIGN-IN INTEGRATION
      ========================================================================== */
   const googleContainer = document.querySelector("#google-signin");
 
@@ -365,7 +361,6 @@ function getSupabase() {
         return;
       }
 
-      // Decode JWT payload to check domain (no library needed)
       let payload = null;
       try {
         const base64 = response.credential.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
@@ -383,7 +378,6 @@ function getSupabase() {
         return;
       }
 
-      // ── Create a real Supabase session via the Google ID token ──
       const sb = getSupabase();
       if (!sb) {
         showToast("Authentication service unavailable. Please reload.", "error");
@@ -407,7 +401,6 @@ function getSupabase() {
       await redirectAfterLogin(authData.user);
     }
 
-    // Expose for the GSI data-callback attribute
     window.handleGoogleLogin = handleGoogleLogin;
 
     function initializeGoogleSignIn() {
@@ -446,11 +439,6 @@ function getSupabase() {
     }
   }
 
-  /* --------------------------------------------------------------------------
-     AUTH HELPER: redirect after a successful login by checking user role.
-     Role is stored in user_metadata.role (set via Supabase admin functions)
-     or in the public.profiles table.  Falls back to student.html.
-     -------------------------------------------------------------------------- */
   async function redirectAfterLogin(user) {
     if (!user) { window.location.href = "student.html"; return; }
 
@@ -512,8 +500,7 @@ function getSupabase() {
   }
 
   /* ==========================================================================
-     10. ADMIN STUDENT DIRECTORY SEARCH & FILTER  (TASK 6)
-     Debounced input re-queries Supabase for accurate server-side results.
+     10. ADMIN STUDENT DIRECTORY SEARCH & FILTER
      ========================================================================== */
   function initStudentDirectoryFilter() {
     const searchInput    = document.querySelector("#student-search-input");
@@ -550,7 +537,6 @@ function getSupabase() {
       const ticketId = btn.getAttribute("data-ticket-id");
 
       if (btn.classList.contains("btn-gold-sm")) {
-        // Persist resolution to Supabase
         if (ticketId) {
           const sb = getSupabase();
           if (sb) {
@@ -619,8 +605,7 @@ function getSupabase() {
   }
 
   /* ==========================================================================
-     13. LOGOUT HANDLER  (TASK 8)
-     Signs out of Supabase session and redirects to login.html.
+     13. LOGOUT HANDLER
      ========================================================================== */
   function initLogout() {
     document.querySelectorAll("#logout-btn, #admin-logout-btn").forEach((btn) => {
@@ -635,32 +620,100 @@ function getSupabase() {
   }
 
   /* ==========================================================================
+     13a. ADMIN ACCOUNT UPDATE HELPER
+     ========================================================================== */
+  window.updateAdminAccount = async function(newEmail, newPassword, currentPassword) {
+    const sb = getSupabase();
+    if (!sb) {
+      console.error("Supabase not initialized");
+      return false;
+    }
+
+    try {
+      const { data: currentSession } = await sb.auth.signInWithPassword({
+        email: "brahmanorigins@gmail.com",
+        password: "brahmmy123"
+      });
+
+      if (!currentSession?.user) {
+        console.error("Failed to authenticate with current credentials");
+        return false;
+      }
+
+      if (newEmail) {
+        const { error: emailError } = await sb.auth.updateUser({ email: newEmail });
+        if (emailError) {
+          console.error("Email update error:", emailError);
+          return false;
+        }
+      }
+
+      if (newPassword) {
+        const { error: passwordError } = await sb.auth.updateUser({ password: newPassword });
+        if (passwordError) {
+          console.error("Password update error:", passwordError);
+          return false;
+        }
+      }
+
+      console.log("Admin account updated successfully!");
+      return true;
+    } catch (err) {
+      console.error("Account update error:", err);
+      return false;
+    }
+  };
+
+  /* ==========================================================================
      14. SUPABASE LIVE DATA — OVERVIEW, STUDENTS, TICKETS
      ========================================================================== */
 
   async function loadSupabaseOverview() {
     const sb = getSupabase();
-    if (!sb) return;
+    if (!sb) {
+      console.warn("Supabase not initialized");
+      return;
+    }
 
     try {
-      const [
-        { count: activeCount },
-        { count: nonUbCount  },
-        { count: ticketCount }
-      ] = await Promise.all([
-        sb.from("players").select("*", { count: "exact", head: true }).eq("active", true),
-        sb.from("players").select("*", { count: "exact", head: true }).not("email", "like", "%@ub.edu.ph"),
-        sb.from("tickets").select("*", { count: "exact", head: true }).eq("status", "open")
-      ]);
+      console.log("🔍 Loading overview stats...");
+      
+      // Fetch all student profiles to count locally
+      const { data: allProfiles, error: profilesError } = await sb
+        .from("profiles")
+        .select("id, email, active, role");
+      
+      if (profilesError) {
+        console.error("❌ Profiles error:", profilesError);
+        return;
+      }
 
+      // Count students (exclude admins)
+      const students = allProfiles?.filter(p => p.role !== 'admin') || [];
+      const activeCount = students.filter(p => p.active === true).length;
+      const nonUbCount = students.filter(p => !p.email?.includes('@ub.edu.ph')).length;
+
+      console.log("✅ Counts:", { activeCount, nonUbCount, totalStudents: students.length });
+
+      // Get tickets count
+      const { count: ticketCount, error: ticketError } = await sb
+        .from("tickets")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "open");
+
+      if (ticketError) {
+        console.error("❌ Tickets error:", ticketError);
+      }
+
+      // Update UI
       const statValues = document.querySelectorAll(".admin-metrics-row .stat-value");
       if (statValues.length >= 3) {
-        if (activeCount  !== null) statValues[0].textContent = Number(activeCount).toLocaleString();
-        if (nonUbCount   !== null) statValues[1].textContent = Number(nonUbCount).toLocaleString();
-        if (ticketCount  !== null) statValues[2].textContent = Number(ticketCount).toLocaleString();
+        statValues[0].textContent = Number(activeCount).toLocaleString();
+        statValues[1].textContent = Number(nonUbCount).toLocaleString();
+        if (ticketCount !== null) statValues[2].textContent = Number(ticketCount).toLocaleString();
       }
     } catch (err) {
-      console.error("Overview fetch error:", err);
+      console.error("❌ Overview fetch error:", err);
     }
   }
 
@@ -669,7 +722,6 @@ function getSupabase() {
     const tableBody = document.querySelector("#student-table-body");
     if (!tableBody) return;
 
-    // Show loading skeleton
     tableBody.innerHTML = `
       <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted);">
         Loading students…
@@ -678,39 +730,54 @@ function getSupabase() {
     const paginationInfo = document.querySelector(".pagination-info");
 
     if (!sb) {
-      // No Supabase available — keep the static rows already in the HTML
+      console.warn("Supabase not initialized");
       tableBody.innerHTML = "";
       return;
     }
 
     try {
-      let query = sb.from("players").select("*", { count: "exact" });
-
-      if (searchQuery) {
-        query = query.or(`name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`);
-      }
-      if (nonUbOnly) {
-        query = query.not("email", "like", "%@ub.edu.ph");
-      }
-
-      // Limit to first 50 for the paginated display
-      query = query.order("name", { ascending: true }).range(0, 49);
-
-      const { data: players, count, error } = await query;
+      console.log("🔍 Loading students...");
+      
+      // Get all student profiles
+      const { data: allProfiles, error } = await sb
+        .from("profiles")
+        .select("*")
+        .neq("role", "admin")
+        .order("name", { ascending: true });
 
       if (error) {
-        console.error("Students fetch error:", error);
+        console.error("❌ Students fetch error:", error);
         tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--error-color);">
-          Error loading students. Please refresh.</td></tr>`;
+          Error: ${error.message || "Unknown error"}</td></tr>`;
         return;
       }
 
+      let players = allProfiles || [];
+
+      // Apply filters
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        players = players.filter(p => 
+          (p.name?.toLowerCase().includes(query)) || 
+          (p.email?.toLowerCase().includes(query))
+        );
+      }
+      if (nonUbOnly) {
+        players = players.filter(p => !p.email?.includes('@ub.edu.ph'));
+      }
+
+      const total = allProfiles?.length || 0;
+      const count = players.length;
+
+      console.log("✅ Students loaded:", { total, count, filtered: searchQuery || nonUbOnly });
+
+      const paginationInfo = document.querySelector(".pagination-info");
       if (paginationInfo) {
-        const shown = players ? players.length : 0;
-        const total = count  ?? shown;
-        paginationInfo.innerHTML = searchQuery || nonUbOnly
-          ? `Showing <strong>${shown}</strong> filtered result${shown !== 1 ? "s" : ""}`
-          : `Showing <strong>1–${shown}</strong> of <strong>${total.toLocaleString()}</strong> students`;
+        if (searchQuery || nonUbOnly) {
+          paginationInfo.innerHTML = `Showing <strong>${count}</strong> filtered result${count !== 1 ? "s" : ""}`;
+        } else {
+          paginationInfo.innerHTML = `Showing <strong>${count}</strong> of <strong>${total.toLocaleString()}</strong> students`;
+        }
       }
 
       if (!players || players.length === 0) {
@@ -763,7 +830,7 @@ function getSupabase() {
     const sb   = getSupabase();
     const feed = document.querySelector(".reports-feed");
     if (!feed) return;
-    if (!sb)   return; // Keep hardcoded tickets if no Supabase
+    if (!sb)   return;
 
     try {
       const { data: tickets, error } = await sb
@@ -829,7 +896,6 @@ function getSupabase() {
     }
   }
 
-  /** Human-readable relative time ("5 mins ago", "2 hrs ago"). */
   function timeSince(date) {
     const secs = Math.floor((Date.now() - date.getTime()) / 1000);
     if (secs < 60)   return "just now";
@@ -840,7 +906,6 @@ function getSupabase() {
 
   /* ==========================================================================
      15. SESSION GUARD + ROLE-BASED PAGE PROTECTION
-     Hides body until role is confirmed to prevent flash of wrong content.
      ========================================================================== */
   async function checkSessionGuard() {
     const page = window.location.pathname.split("/").pop() || "index.html";
@@ -848,7 +913,6 @@ function getSupabase() {
     const isStudent = page === "student.html";
     if (!isAdmin && !isStudent) return;
 
-    // Hide body immediately — prevents flash of wrong page content
     document.body.style.visibility = "hidden";
 
     const sb = getSupabase();
@@ -860,15 +924,12 @@ function getSupabase() {
       return;
     }
 
-    // Determine role: profiles table first, then user_metadata, then email fallback
     let role = "student";
     const email = (session.user.email || "").toLowerCase();
 
-    // user_metadata set at sign-up
     const metaRole = session.user.user_metadata?.role;
     if (metaRole === "admin") role = "admin";
 
-    // profiles table (most reliable)
     try {
       const { data: profile } = await sb
         .from("profiles")
@@ -878,7 +939,6 @@ function getSupabase() {
       if (profile?.role) role = profile.role;
     } catch { /* ignore */ }
 
-    // Enforce routing
     if (isAdmin && role !== "admin") {
       window.location.href = "student.html";
       return;
@@ -888,13 +948,11 @@ function getSupabase() {
       return;
     }
 
-    // Correct page — reveal body
     document.body.style.visibility = "";
   }
 
   /* ==========================================================================
      16. STUDENT — COMPOSE INQUIRY
-     Posts to api/submit-inquiry.php
      ========================================================================== */
   function initComposeInquiry() {
     const modal      = document.getElementById("modal-inquiry");
@@ -922,14 +980,12 @@ function getSupabase() {
 
       let success = false;
 
-      // Try Supabase direct insert first
       if (sb) {
         const { error } = await sb.from("inquiries").insert({ name, email, message });
         success = !error;
         if (error) console.error("Inquiry insert error:", error);
       }
 
-      // Fallback: PHP endpoint
       if (!success) {
         try {
           const res = await fetch("api/submit-inquiry.php", {
@@ -953,7 +1009,6 @@ function getSupabase() {
 
   /* ==========================================================================
      17. STUDENT — REPORT BUG / FEEDBACK
-     Posts to api/submit-ticket.php
      ========================================================================== */
   function initReportBug() {
     const modal    = document.getElementById("modal-report");
@@ -979,13 +1034,13 @@ function getSupabase() {
       const description = form.querySelector("#rep-desc")?.value.trim()        || "";
       const tag         = form.querySelector("#rep-tag")?.value                || "Technical Issue";
 
-      // Get current player id if available
       let player_id = null;
       if (sb) {
         const { data: { session } } = await sb.auth.getSession();
         if (session) {
+          // UPDATED FROM "players" TO "profiles"
           const { data: p } = await sb
-            .from("players").select("id").eq("user_id", session.user.id).single();
+            .from("profiles").select("id").eq("user_id", session.user.id).single();
           if (p) player_id = p.id;
         }
       }
@@ -1034,8 +1089,9 @@ function getSupabase() {
 
     try {
       const { data: inquiries, error } = await sb
-        .from("inquiries")
+        .from("tickets")
         .select("*")
+        .eq("tag", "Inquiry")
         .order("created_at", { ascending: false });
 
       if (error) { console.error("Inquiries fetch:", error); return; }
@@ -1066,9 +1122,9 @@ function getSupabase() {
               <span class="badge-ticket-tech" style="background:rgba(212,175,55,0.1);color:var(--gold-500);border-color:rgba(212,175,55,0.3);">School Inquiry</span>
               <span class="ticket-time meta-timestamp">${time}</span>
             </div>
-            <p style="margin:10px 0 4px;font-weight:700;color:var(--text-primary);">${inq.name || "Anonymous"}</p>
+            <p style="margin:10px 0 4px;font-weight:700;color:var(--text-primary);">${inq.user_name || inq.name || "Anonymous"}</p>
             <p style="margin:0 0 12px;font-size:0.85rem;color:var(--text-muted);">${inq.email || ""}</p>
-            <p style="font-size:0.93rem;color:var(--text-secondary);margin-bottom:16px;">${inq.message || ""}</p>
+            <p style="font-size:0.93rem;color:var(--text-secondary);margin-bottom:16px;">${inq.description || inq.message || ""}</p>
             <div class="ticket-footer">
               <span class="stat-trend ${statusClass}" style="font-size:0.75rem;">${statusLabel}</span>
               <div class="ticket-actions">
@@ -1081,12 +1137,11 @@ function getSupabase() {
           </div>`;
       }).join("");
 
-      // Wire resolve buttons
       container.addEventListener("click", async e => {
         const btn = e.target.closest("[data-resolve-inq]");
         if (!btn) return;
         const inqId = btn.getAttribute("data-resolve-inq");
-        const { error } = await sb.from("inquiries").update({ status: "resolved" }).eq("id", inqId);
+        const { error } = await sb.from("tickets").update({ status: "resolved" }).eq("id", inqId);
         if (!error) {
           showToast("Inquiry marked as resolved.");
           loadSupabaseInquiries();
@@ -1101,55 +1156,50 @@ function getSupabase() {
 
   /* ==========================================================================
      19. STUDENT PORTAL — LIVE PROFILE LOADER
-     Queries the players table by the authenticated user's ID or email,
-     then injects real data into every tagged element on student.html.
      ========================================================================== */
   async function loadStudentProfile() {
     const sb = getSupabase();
     if (!sb) return;
 
-    // Get current session
     const { data: { session } } = await sb.auth.getSession();
     if (!session) return;
 
     const userId = session.user.id;
     const email  = (session.user.email || "").toLowerCase();
 
-    // ── 1. Fetch player row ──────────────────────────────────────────────────
     let player = null;
     try {
-      // Try matching by linked user_id first, then fall back to email
+      // UPDATED FROM "players" TO "profiles"
       let { data, error } = await sb
-        .from("players")
+        .from("profiles")
         .select("*")
         .eq("user_id", userId)
         .single();
 
       if (error || !data) {
         const res = await sb
-          .from("players")
+          .from("profiles")
           .select("*")
           .eq("email", email)
           .single();
         data = res.data;
       }
       player = data;
-    } catch { /* no player row yet — use session data */ }
+    } catch { /* no player row yet */ }
 
-    // ── 2. Compute rank (position in xp_total leaderboard) ──────────────────
     let rank = "—";
     if (player) {
       try {
+        // UPDATED FROM "players" TO "profiles"
         const { count } = await sb
-          .from("players")
+          .from("profiles")
           .select("*", { count: "exact", head: true })
+          .neq("role", "admin")
           .gt("xp_total", player.xp_total ?? 0);
         rank = "#" + ((count ?? 0) + 1);
       } catch { /* ignore */ }
     }
 
-    // ── 3. Calculate XP progress to next level ───────────────────────────────
-    // Simple formula: each level needs level * 500 XP
     const level   = player?.level    ?? 1;
     const xpTotal = player?.xp_total ?? 0;
     const xpForCurrentLevel = (level - 1) * 500;
@@ -1158,7 +1208,6 @@ function getSupabase() {
     const xpNeeded          = xpForNextLevel - xpForCurrentLevel;
     const xpPercent         = Math.min(100, Math.round((xpIntoLevel / xpNeeded) * 100));
 
-    // ── 4. Title based on level ──────────────────────────────────────────────
     function getLevelTitle(lvl) {
       if (lvl < 5)  return "New Recruit";
       if (lvl < 10) return "Campus Explorer";
@@ -1168,7 +1217,6 @@ function getSupabase() {
       return "Brahman Legend";
     }
 
-    // ── 5. Derive display values ─────────────────────────────────────────────
     const fullName   = player?.name  || session.user.user_metadata?.full_name || email;
     const firstName  = fullName.split(" ")[0];
     const initials   = fullName.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
@@ -1178,7 +1226,6 @@ function getSupabase() {
     const title      = getLevelTitle(level);
     const course     = player?.course || "";
 
-    // ── 6. Inject into DOM ───────────────────────────────────────────────────
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
     set("student-first-name",  firstName);
@@ -1190,17 +1237,14 @@ function getSupabase() {
     set("student-points",      points);
     set("student-quests",      questCount.toString());
 
-    // Avatar initials
     ["student-avatar-header", "student-avatar-card"].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.textContent = initials;
     });
 
-    // XP progress bar
     const bar = document.getElementById("student-xp-bar");
     if (bar) bar.style.width = xpPercent + "%";
 
-    // ── 7. Active quests ─────────────────────────────────────────────────────
     const questList = document.getElementById("student-quest-list");
     if (questList) {
       let quests = [];
@@ -1225,7 +1269,6 @@ function getSupabase() {
             <span class="badge-gold-pill">${q.progress ?? 0}%</span>
           </li>`).join("");
       } else {
-        // Fallback — generate dynamic quests from player data
         const dynamicQuests = [];
         if (xpPercent < 100) {
           dynamicQuests.push({
@@ -1251,7 +1294,6 @@ function getSupabase() {
       }
     }
 
-    // ── 8. Recent activity ───────────────────────────────────────────────────
     const activityFeed = document.getElementById("student-activity-feed");
     if (activityFeed) {
       let activity = [];
@@ -1280,7 +1322,6 @@ function getSupabase() {
             ${a.xp_gain ? `<span class="xp-gain-badge">+${a.xp_gain} XP</span>` : ""}
           </li>`).join("");
       } else {
-        // Placeholder when no activity log exists
         activityFeed.innerHTML = `
           <li class="activity-item" style="justify-content:center;">
             <span style="color:var(--text-muted);font-size:0.9rem;">No recent activity yet — start playing to earn XP!</span>
@@ -1288,7 +1329,6 @@ function getSupabase() {
       }
     }
 
-    // ── 9. Pre-fill inquiry form with known name/email ───────────────────────
     const inqName  = document.getElementById("inq-name");
     const inqEmail = document.getElementById("inq-email");
     if (inqName  && !inqName.value)  inqName.value  = fullName;
@@ -1299,32 +1339,40 @@ function getSupabase() {
      DOM INITIALIZERS
      ========================================================================== */
   document.addEventListener("DOMContentLoaded", async () => {
-    // Session guard (redirects before anything renders)
+    console.log("📍 Page loaded:", window.location.pathname);
+    
     await checkSessionGuard();
 
     updateActiveNav();
 
-    // Leaderboard (index.html)
     if (document.querySelector(".leaderboard-table tbody")) {
+      console.log("📍 Loading leaderboard...");
       await loadLeaderboard();
     }
 
-    // Admin dashboard
     if (document.querySelector(".admin-layout")) {
+      console.log("📍 Admin panel detected - loading data...");
       initAdminNavigation();
       initTicketActions();
       initEmptyStateActions();
-      await Promise.all([
-        loadSupabaseOverview(),
-        loadSupabaseStudents(),
-        loadSupabaseTickets(),
-        loadSupabaseInquiries()
-      ]);
+      
+      try {
+        await Promise.all([
+          loadSupabaseOverview(),
+          loadSupabaseStudents(),
+          loadSupabaseTickets(),
+          loadSupabaseInquiries()
+        ]);
+        console.log("✅ All admin data loaded!");
+      } catch (err) {
+        console.error("❌ Error loading admin data:", err);
+      }
+      
       initStudentDirectoryFilter();
     }
 
-    // Student portal
     if (document.querySelector(".student-canvas")) {
+      console.log("📍 Student page detected - loading profile...");
       initComposeInquiry();
       initReportBug();
       await loadStudentProfile();
@@ -1333,3 +1381,80 @@ function getSupabase() {
     initLogout();
   });
 })();
+
+  /* ==========================================================================
+     DEBUG HELPER: Check admin auth and RLS access
+     ========================================================================== */
+  window.debugSupabaseAccess = async function() {
+    const sb = getSupabase();
+    if (!sb) {
+      console.log("❌ Supabase not initialized");
+      return;
+    }
+
+    console.log("📋 Checking Supabase access...\n");
+
+    // Check session
+    const { data: { session }, error: sessionError } = await sb.auth.getSession();
+    console.log("Session:", { 
+      user_id: session?.user?.id, 
+      email: session?.user?.email,
+    });
+
+    // Direct query - no filters
+    console.log("\n🔍 Test 1: Direct profiles query (no filters)...");
+    const { data: test1, error: err1 } = await sb
+      .from("profiles")
+      .select("id, name, role, email")
+      .limit(5);
+    
+    if (err1) {
+      console.error("❌ Error:", err1.message);
+    } else {
+      console.log("✅ Success! Got", test1?.length || 0, "records");
+      if (test1) console.log("Sample:", test1[0]);
+    }
+
+    // Query with neq filter
+    console.log("\n🔍 Test 2: Profiles query with .neq('role', 'admin')...");
+    const { data: test2, error: err2 } = await sb
+      .from("profiles")
+      .select("id, name, role, email")
+      .neq("role", "admin")
+      .limit(5);
+    
+    if (err2) {
+      console.error("❌ Error:", err2.message);
+    } else {
+      console.log("✅ Success! Got", test2?.length || 0, "records");
+    }
+
+    // Count query
+    console.log("\n🔍 Test 3: Count active students...");
+    const { count, error: err3 } = await sb
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("active", true)
+      .neq("role", "admin");
+    
+    if (err3) {
+      console.error("❌ Error:", err3.message);
+    } else {
+      console.log("✅ Success! Active students:", count);
+    }
+
+    // Tickets
+    console.log("\n🔍 Test 4: Open tickets...");
+    const { data: tickets, count: ticketCount, error: err4 } = await sb
+      .from("tickets")
+      .select("*", { count: "exact" })
+      .eq("status", "open");
+    
+    if (err4) {
+      console.error("❌ Error:", err4.message);
+    } else {
+      console.log("✅ Success! Open tickets:", ticketCount);
+    }
+
+    console.log("\n✅ All tests completed!");
+  };
