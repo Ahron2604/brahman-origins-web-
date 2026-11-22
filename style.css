@@ -873,7 +873,7 @@ section:nth-of-type(odd) {
 
 /* Light Admin Layout Base */
 body.bg-admin-dark {
-  background-color: var(--bg-light-gray);
+  background-color: #faf8f5;
   background-image: var(--bg-warm-radial);
   color: var(--text-primary);
 }
@@ -881,7 +881,7 @@ body.bg-admin-dark {
 .admin-layout {
   display: flex;
   min-height: 100vh;
-  background-color: var(--bg-light-gray);
+  background-color: #faf8f5;
 }
 
 /* Sidebar Container */
@@ -1032,7 +1032,7 @@ body.bg-admin-dark {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background-color: transparent;
+  background-color: #faf8f5;
 }
 
 /* Admin Top Header */
@@ -1043,6 +1043,7 @@ body.bg-admin-dark {
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border-color);
+  background-color: #ffffff;
   background: #ffffff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
@@ -1825,6 +1826,7 @@ body.bg-student-grid {
   padding: 16px 20px;
   border-bottom: 1px solid var(--border-color);
   vertical-align: middle;
+  color: var(--text-primary);
 }
 
 .admin-table tbody tr:last-child td {
@@ -2177,6 +2179,7 @@ body.bg-student-grid {
   border-radius: var(--radius-md);
   padding: 24px;
   box-shadow: 0 4px 16px rgba(33, 23, 25, 0.04);
+  color: var(--text-primary);
 }
 
 .admin-card-surface:hover {
@@ -2207,6 +2210,7 @@ body.bg-student-grid {
 
 .view-description {
   font-size: 0.96rem;
+  color: var(--text-secondary);
   color: var(--text-muted);
   font-weight: 500;
   line-height: 1.5;
@@ -2228,7 +2232,7 @@ body.bg-student-grid {
   font-family: var(--font-display);
   font-size: 2.4rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--maroon-primary);
   line-height: 1;
   letter-spacing: -0.02em;
 }

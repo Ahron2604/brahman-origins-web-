@@ -2,7 +2,7 @@
 // =============================================================================
 // POST /api/submit-inquiry.php
 // Accepts JSON: { name, email, message }
-// Inserts a row into the public.inquiries table via Supabase REST API.
+// Inserts a row into the public.tickets table via Supabase REST API with tag='Inquiry'
 // =============================================================================
 
 require_once __DIR__ . '/config.php';
@@ -43,12 +43,14 @@ if (!empty($errors)) {
     json_response(false, implode(' ', $errors), 422);
 }
 
-// Insert into Supabase
-$result = supabase_request('inquiries', 'POST', [
-    'name'    => $name,
-    'email'   => $email,
-    'message' => $message,
-    'status'  => 'open'
+// Insert into tickets table with Inquiry tag
+$result = supabase_request('tickets', 'POST', [
+    'user_name'   => $name,
+    'email'       => $email,
+    'title'       => 'Inquiry: ' . $email,
+    'description' => $message,
+    'tag'         => 'Inquiry',
+    'status'      => 'open'
 ]);
 
 if ($result['status'] >= 200 && $result['status'] < 300) {

@@ -361,23 +361,6 @@ function getSupabase() {
         return;
       }
 
-      let payload = null;
-      try {
-        const base64 = response.credential.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-        payload = JSON.parse(decodeURIComponent(
-          atob(base64).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join("")
-        ));
-      } catch {
-        showGoogleError("Unable to process your Google account.");
-        return;
-      }
-
-      const email = (payload.email || "").toLowerCase();
-      if (!email) {
-        showGoogleError("Could not read your email from the Google account.");
-        return;
-      }
-
       const sb = getSupabase();
       if (!sb) {
         showToast("Authentication service unavailable. Please reload.", "error");
@@ -386,19 +369,28 @@ function getSupabase() {
 
       showToast("Verifying your UB account…");
 
-      const { data: authData, error } = await sb.auth.signInWithIdToken({
-        provider:    "google",
-        token:       response.credential,
-        nonce:       undefined
-      });
+      try {
+        // Supabase handles the Google JWT token directly
+        const { data: authData, error } = await sb.auth.signInWithIdToken({
+          provider: "google",
+          token: response.credential
+        });
 
-      if (error) {
-        console.error("Supabase Google auth error:", error);
-        showGoogleError("Sign-in failed: " + (error.message || "please try again."));
-        return;
+        if (error) {
+          console.error("Supabase Google auth error:", error);
+          showGoogleError("Sign-in failed: " + (error.message || "please try again."));
+          return;
+        }
+
+        if (authData?.user) {
+          await redirectAfterLogin(authData.user);
+        } else {
+          showGoogleError("Sign-in succeeded but no user returned.");
+        }
+      } catch (err) {
+        console.error("Google login error:", err);
+        showGoogleError("An error occurred during sign-in. Please try again.");
       }
-
-      await redirectAfterLogin(authData.user);
     }
 
     window.handleGoogleLogin = handleGoogleLogin;
@@ -797,7 +789,7 @@ function getSupabase() {
           .split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
 
         return `
-          <tr>
+          <tr class="student-row-clickable" data-student-id="${player.id}" style="cursor:pointer;">
             <td>
               <div class="player-col">
                 <div class="avatar-sm-gold">${initials}</div>
@@ -815,15 +807,100 @@ function getSupabase() {
               <span class="status-dot ${statusClass}" aria-hidden="true"></span>
               ${statusText}
             </td>
-            <td class="text-right"><a href="#" class="link-action">View details &rarr;</a></td>
+            <td class="text-right"><a href="#" class="link-action" onclick="event.stopPropagation();">View details &rarr;</a></td>
           </tr>`;
       }).join("");
+
+      // Add click handlers to student rows
+      document.querySelectorAll(".student-row-clickable").forEach(row => {
+        row.addEventListener("click", () => {
+          const studentId = row.getAttribute("data-student-id");
+          const student = players.find(p => p.id === studentId);
+          if (student) showStudentDetailsModal(student);
+        });
+      });
 
     } catch (err) {
       console.error("Students query error:", err);
       tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--error-color);">
         Unexpected error. Please refresh.</td></tr>`;
     }
+  }
+
+  function showStudentDetailsModal(student) {
+    const modal = document.getElementById("modal-student-details");
+    if (!modal) return;
+
+    const initials = (student.name || "P")
+      .split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
+
+    document.getElementById("detail-avatar").textContent = initials;
+    document.getElementById("detail-name").textContent = student.name || "Unknown";
+    document.getElementById("detail-email").textContent = student.email || "—";
+    document.getElementById("detail-course").textContent = student.course || "N/A";
+    document.getElementById("detail-level").textContent = student.level || 1;
+    document.getElementById("detail-xp").textContent = (student.xp_total || 0).toLocaleString();
+    document.getElementById("detail-quests").textContent = student.quests_completed || 0;
+    
+    // Calculate rank
+    getSupabase()?.from("profiles")
+      .select("*", { count: "exact", head: true })
+      .neq("role", "admin")
+      .gt("xp_total", student.xp_total || 0)
+      .then(({ count }) => {
+        document.getElementById("detail-rank").textContent = "#" + ((count || 0) + 1);
+      });
+
+    const statusBadge = document.getElementById("detail-status-badge");
+    if (statusBadge) {
+      if (student.active) {
+        statusBadge.textContent = "Active";
+        statusBadge.style.background = "rgba(34,197,94,0.1)";
+        statusBadge.style.color = "#22c55e";
+        statusBadge.style.borderColor = "rgba(34,197,94,0.3)";
+      } else {
+        statusBadge.textContent = "Inactive";
+        statusBadge.style.background = "rgba(107,114,128,0.1)";
+        statusBadge.style.color = "#9ca3af";
+        statusBadge.style.borderColor = "rgba(107,114,128,0.3)";
+      }
+    }
+
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden", "false");
+  }
+
+  function showTicketDetailsModal(ticket) {
+    const modal = document.getElementById("modal-ticket-details");
+    if (!modal) return;
+
+    const tag = ticket.tag || "Technical Issue";
+    const timeStr = ticket.created_at
+      ? timeSince(new Date(ticket.created_at))
+      : "Recently";
+
+    document.getElementById("detail-ticket-tag").textContent = tag;
+    document.getElementById("detail-ticket-time").textContent = timeStr;
+    document.getElementById("detail-ticket-title").textContent = ticket.title || "Untitled Ticket";
+    document.getElementById("detail-ticket-description").textContent = ticket.description || "No description provided.";
+    document.getElementById("detail-ticket-reporter").textContent = ticket.user_name || "Unknown Player";
+
+    const tagBadge = document.getElementById("detail-ticket-tag");
+    if (tagBadge) {
+      const isAmber = tag.toLowerCase().includes("feedback");
+      if (isAmber) {
+        tagBadge.style.background = "rgba(245,158,11,0.1)";
+        tagBadge.style.color = "#b45309";
+        tagBadge.style.borderColor = "rgba(245,158,11,0.3)";
+      } else {
+        tagBadge.style.background = "rgba(220,38,38,0.1)";
+        tagBadge.style.color = "#dc2626";
+        tagBadge.style.borderColor = "rgba(220,38,38,0.3)";
+      }
+    }
+
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden", "false");
   }
 
   async function loadSupabaseTickets() {
@@ -874,7 +951,8 @@ function getSupabase() {
 
         const card = document.createElement("div");
         card.className = "admin-card-surface report-ticket";
-        card.style.cssText = `border-left:4px solid ${borderCol};padding:22px;margin-bottom:15px;`;
+        card.style.cssText = `border-left:4px solid ${borderCol};padding:22px;margin-bottom:15px;cursor:pointer;`;
+        card.setAttribute("data-ticket-id", ticket.id);
         card.innerHTML = `
           <div class="ticket-header">
             <span class="badge-ticket-tech" ${tagStyle}>${tag}</span>
@@ -884,10 +962,13 @@ function getSupabase() {
           <div class="ticket-footer">
             <p class="ticket-reporter">Reported by <strong>${ticket.user_name || "Unknown"}</strong></p>
             <div class="ticket-actions">
-              <button class="btn-outline-dark-sm">View Ticket</button>
-              <button class="btn-gold-sm" data-ticket-id="${ticket.id}">Resolve</button>
+              <button class="btn-outline-dark-sm" onclick="event.stopPropagation(); showTicketDetailsModal({id:'${ticket.id}', title:'${ticket.title}', description:'${ticket.description}', tag:'${ticket.tag}', user_name:'${ticket.user_name}', created_at:'${ticket.created_at}'});">View Ticket</button>
+              <button class="btn-gold-sm" data-ticket-id="${ticket.id}" onclick="event.stopPropagation();">Resolve</button>
             </div>
           </div>`;
+        card.addEventListener("click", () => {
+          showTicketDetailsModal(ticket);
+        });
         feed.appendChild(card);
       });
 
@@ -978,14 +1059,38 @@ function getSupabase() {
       const email   = form.querySelector("#inq-email")?.value.trim()   || "";
       const message = form.querySelector("#inq-message")?.value.trim() || "";
 
-      let success = false;
-
-      if (sb) {
-        const { error } = await sb.from("inquiries").insert({ name, email, message });
-        success = !error;
-        if (error) console.error("Inquiry insert error:", error);
+      // Validation
+      if (!name || !email || !message) {
+        showToast("Please fill in all fields.", "error");
+        setLoading(submitBtn, false, "Send Inquiry");
+        return;
       }
 
+      let success = false;
+
+      // Try Supabase first - insert into tickets table with Inquiry tag
+      if (sb) {
+        try {
+          const { data, error } = await sb.from("tickets").insert({ 
+            user_name: name,
+            email: email, 
+            title: "Inquiry: " + email,
+            description: message,
+            tag: "Inquiry",
+            status: "open"
+          });
+          if (!error) {
+            success = true;
+            console.log("✅ Inquiry sent via Supabase");
+          } else {
+            console.error("❌ Supabase inquiry error:", error);
+          }
+        } catch (err) {
+          console.error("❌ Supabase exception:", err);
+        }
+      }
+
+      // Fallback to PHP API
       if (!success) {
         try {
           const res = await fetch("api/submit-inquiry.php", {
@@ -993,8 +1098,15 @@ function getSupabase() {
             headers: { "Content-Type": "application/json" },
             body:    JSON.stringify({ name, email, message })
           });
-          success = res.ok;
-        } catch (err) { console.error("PHP fallback error:", err); }
+          if (res.ok) {
+            success = true;
+            console.log("✅ Inquiry sent via PHP API");
+          } else {
+            console.error("❌ PHP API returned:", res.status, res.statusText);
+          }
+        } catch (err) { 
+          console.error("❌ PHP API error:", err); 
+        }
       }
 
       setLoading(submitBtn, false, "Send Inquiry");
@@ -1379,6 +1491,166 @@ function getSupabase() {
     }
 
     initLogout();
+
+    // Modal close handlers
+    const closeStudentDetailsBtn = document.getElementById("btn-close-student-details");
+    if (closeStudentDetailsBtn) {
+      closeStudentDetailsBtn.addEventListener("click", () => {
+        const modal = document.getElementById("modal-student-details");
+        if (modal) {
+          modal.style.display = "none";
+          modal.setAttribute("aria-hidden", "true");
+        }
+      });
+    }
+
+    const closeAdminSettingsBtn = document.getElementById("btn-close-admin-settings");
+    if (closeAdminSettingsBtn) {
+      closeAdminSettingsBtn.addEventListener("click", () => {
+        const modal = document.getElementById("modal-admin-settings");
+        if (modal) {
+          modal.style.display = "none";
+          modal.setAttribute("aria-hidden", "true");
+        }
+      });
+    }
+
+    const closeTicketDetailsBtn = document.getElementById("btn-close-ticket-details");
+    if (closeTicketDetailsBtn) {
+      closeTicketDetailsBtn.addEventListener("click", () => {
+        const modal = document.getElementById("modal-ticket-details");
+        if (modal) {
+          modal.style.display = "none";
+          modal.setAttribute("aria-hidden", "true");
+        }
+      });
+    }
+
+    // Admin avatar click handler
+    const adminAvatarBtn = document.querySelector(".admin-avatar");
+    if (adminAvatarBtn) {
+      adminAvatarBtn.addEventListener("click", async () => {
+        const sb = getSupabase();
+        if (sb) {
+          const { data: { session } } = await sb.auth.getSession();
+          if (session) {
+            document.getElementById("admin-email-display").textContent = session.user.email || "Admin";
+            const modal = document.getElementById("modal-admin-settings");
+            if (modal) {
+              modal.style.display = "flex";
+              modal.setAttribute("aria-hidden", "false");
+            }
+          }
+        }
+      });
+    }
+
+    // Admin password change form
+    const adminPasswordForm = document.getElementById("form-change-password");
+    if (adminPasswordForm) {
+      adminPasswordForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const currentPassword = document.getElementById("admin-current-password").value;
+        const newPassword = document.getElementById("admin-new-password").value;
+        const confirmPassword = document.getElementById("admin-confirm-password").value;
+
+        // Validation
+        if (!currentPassword) {
+          showToast("Please enter your current password.", "error");
+          return;
+        }
+
+        if (!newPassword || !confirmPassword) {
+          showToast("Please fill in both new password fields.", "error");
+          return;
+        }
+
+        if (newPassword !== confirmPassword) {
+          showToast("New passwords do not match.", "error");
+          return;
+        }
+
+        if (newPassword.length < 6) {
+          showToast("New password must be at least 6 characters long.", "error");
+          return;
+        }
+
+        if (currentPassword === newPassword) {
+          showToast("New password must be different from current password.", "error");
+          return;
+        }
+
+        const sb = getSupabase();
+        if (!sb) {
+          showToast("Authentication service unavailable.", "error");
+          return;
+        }
+
+        try {
+          const { data: { session } } = await sb.auth.getSession();
+          if (!session) {
+            showToast("Session expired. Please log in again.", "error");
+            return;
+          }
+
+          // Verify current password by attempting to sign in
+          const { error: verifyError } = await sb.auth.signInWithPassword({
+            email: session.user.email,
+            password: currentPassword
+          });
+
+          if (verifyError) {
+            showToast("Current password is incorrect.", "error");
+            return;
+          }
+
+          // Update password
+          const { error: updateError } = await sb.auth.updateUser({ password: newPassword });
+          if (updateError) {
+            showToast("Failed to update password: " + updateError.message, "error");
+            return;
+          }
+
+          showToast("Password updated successfully!");
+          adminPasswordForm.reset();
+          document.getElementById("modal-admin-settings").style.display = "none";
+          document.getElementById("modal-admin-settings").setAttribute("aria-hidden", "true");
+        } catch (err) {
+          showToast("Error updating password: " + err.message, "error");
+        }
+      });
+    }
+
+    // Close modals when clicking outside
+    const studentModal = document.getElementById("modal-student-details");
+    if (studentModal) {
+      studentModal.addEventListener("click", (e) => {
+        if (e.target === studentModal) {
+          studentModal.style.display = "none";
+          studentModal.setAttribute("aria-hidden", "true");
+        }
+      });
+    }
+
+    const adminSettingsModal = document.getElementById("modal-admin-settings");
+    if (adminSettingsModal) {
+      adminSettingsModal.addEventListener("click", (e) => {
+        if (e.target === adminSettingsModal) {
+          adminSettingsModal.style.display = "none";
+          adminSettingsModal.setAttribute("aria-hidden", "true");
+        }
+      });
+    }
+
+    const ticketModal = document.getElementById("modal-ticket-details");
+    if (ticketModal) {
+      ticketModal.addEventListener("click", (e) => {
+        if (e.target === ticketModal) {
+          ticketModal.style.display = "none";
+          ticketModal.setAttribute("aria-hidden", "true");
+        }
+      });
+    }
   });
 })();
 
