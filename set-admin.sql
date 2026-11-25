@@ -6,7 +6,7 @@
 
 do $$
 declare
-  raw_id    text := '5eab0237-e27f-4d31-9555-e21f49b73fef';   -- ← paste UUID here, keep the quotes
+  raw_id    text := '9406bc6b-9d62-4582-ad77-8760e5fbb7b9';   -- ← paste UUID here, keep the quotes
   admin_uid uuid;
 begin
   begin

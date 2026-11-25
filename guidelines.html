@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>How to Play | Brahman Origins</title>
+  <link rel="icon" type="image/png" href="images/BRAHMMY.png">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,12 +13,7 @@
   <header class="site-header">
   <div class="container">
     <a class="brand" href="index.html">
-      <svg class="brand-mark" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <rect width="42" height="42" rx="10" fill="#1a0509"/>
-        <path d="M21 6 L34 11 V21 C34 30 28 35 21 37 C14 35 8 30 8 21 V11 Z" stroke="#c89b3c" stroke-width="2"/>
-        <path d="M21 26 C17 22 14 22 12 25 M21 26 C25 22 28 22 30 25" stroke="#dab65e" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="21" cy="16" r="2.4" fill="#c89b3c"/>
-      </svg>
+      <img class="brand-mark" src="images/BRAHMMY.png" alt="Brahman Origins shield logo" width="42" height="42">
       <span class="brand-text"><strong>Brahman Origins</strong><span>University of Batangas</span></span>
     </a>
 
@@ -26,8 +22,12 @@
         <li><a href="index.html">Home</a></li>
         <li><a href="index.html#about">About</a></li>
         <li><a href="guidelines.html" aria-current="page">How to Play</a></li>
-        <li><a href="index.html#leaderboard">Leaderboard</a></li>
-        <li><a href="login.html" class="nav-login">Login</a></li>
+        <li id="nav-login-item"><a href="login.html" class="nav-login">Login</a></li>
+        <li id="nav-user-item" style="display:none;align-items:center;gap:10px;">
+          <span id="nav-avatar" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:var(--gold-400,#d4af37);color:#1a0509;font-size:0.72rem;font-weight:800;flex-shrink:0;"></span>
+          <span id="nav-username" style="font-size:0.78rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#ffffff;"></span>
+          <button id="index-logout-btn" class="nav-login" style="background:transparent;border:1px solid rgba(255,255,255,0.3);border-radius:999px;padding:7px 18px;cursor:pointer;font-size:0.78rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#ffffff;">Logout</button>
+        </li>
       </ul>
     </nav>
 
@@ -67,14 +67,14 @@
             <span class="step-num">02</span>
             <div>
               <h3>Enter the game</h3>
-              <p>Click <strong>Play the Game</strong> from any page to launch the official Unity WebGL build in a new tab. The website and the game share the same account and progress.</p>
+              <p>Launch the official Unity WebGL build after signing in. The website and the game share the same account and progress.</p>
             </div>
           </div>
           <div class="step-row">
             <span class="step-num">03</span>
             <div>
               <h3>Explore</h3>
-              <p>Walk the 3D recreations of the UB Elementary and Millennium Campuses, and talk to the NPCs who populate them.</p>
+              <p>Explore the game world and talk to the NPCs who populate it.</p>
             </div>
           </div>
           <div class="step-row">
@@ -94,26 +94,33 @@
           <div class="step-row">
             <span class="step-num">06</span>
             <div>
-              <h3>Earn XP</h3>
-              <p>Quests, minigames, achievements, and events all add to one XP total. Enough XP moves you up a level; enough levels move you through a stage.</p>
+              <h3>Learn the controls</h3>
+              <p>Get familiar with the basics before diving in.</p>
+              <ul style="margin-top:12px;display:flex;flex-direction:column;gap:8px;list-style:none;padding:0;">
+                <li style="display:flex;align-items:center;gap:10px;">
+                  <kbd style="display:inline-flex;align-items:center;justify-content:center;min-width:36px;padding:4px 10px;background:var(--maroon-primary);color:#fff;border-radius:6px;font-size:0.8rem;font-weight:700;font-family:monospace;letter-spacing:0.05em;">WASD</kbd>
+                  <span style="color:var(--text-secondary);font-size:0.95rem;">Move your character</span>
+                </li>
+                <li style="display:flex;align-items:center;gap:10px;">
+                  <kbd style="display:inline-flex;align-items:center;justify-content:center;min-width:36px;padding:4px 10px;background:var(--maroon-primary);color:#fff;border-radius:6px;font-size:0.8rem;font-weight:700;font-family:monospace;letter-spacing:0.05em;">E</kbd>
+                  <span style="color:var(--text-secondary);font-size:0.95rem;">Interact with NPCs and objects</span>
+                </li>
+                <li style="display:flex;align-items:center;gap:10px;">
+                  <kbd style="display:inline-flex;align-items:center;justify-content:center;min-width:36px;padding:4px 10px;background:var(--maroon-primary);color:#fff;border-radius:6px;font-size:0.8rem;font-weight:700;font-family:monospace;letter-spacing:0.05em;">G</kbd>
+                  <span style="color:var(--text-secondary);font-size:0.95rem;">Open the leaderboard</span>
+                </li>
+              </ul>
             </div>
           </div>
           <div class="step-row">
             <span class="step-num">07</span>
-            <div>
-              <h3>Unlock achievements</h3>
-              <p>Hit specific milestones and an achievement unlocks on your profile, timestamped with the date you earned it.</p>
-            </div>
-          </div>
-          <div class="step-row">
-            <span class="step-num">08</span>
             <div>
               <h3>Complete your journey</h3>
               <p>Progress in order: Elementary → High School → Senior High School → College. There's no skipping a stage.</p>
             </div>
           </div>
           <div class="step-row">
-            <span class="step-num">09</span>
+            <span class="step-num">08</span>
             <div>
               <h3>Earn the Loyalty Award</h3>
               <p>Finish College, and the Loyalty Award unlocks on your profile the one reward reserved for players who saw the whole journey through.</p>
@@ -124,7 +131,6 @@
         <div class="cta-banner" style="margin-top:64px;">
           <h2>Know the steps. Now walk them.</h2>
           <div class="cta-banner-actions">
-            <a href="#" class="btn btn-primary" data-play-game>Play the Game</a>
             <a href="login.html" class="btn btn-outline">Log In</a>
           </div>
         </div>
@@ -138,12 +144,7 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <a class="brand" href="index.html">
-            <svg class="brand-mark" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <rect width="42" height="42" rx="10" fill="#1a0509"/>
-              <path d="M21 6 L34 11 V21 C34 30 28 35 21 37 C14 35 8 30 8 21 V11 Z" stroke="#c89b3c" stroke-width="2"/>
-              <path d="M21 26 C17 22 14 22 12 25 M21 26 C25 22 28 22 30 25" stroke="#dab65e" stroke-width="2" stroke-linecap="round"/>
-              <circle cx="21" cy="16" r="2.4" fill="#c89b3c"/>
-            </svg>
+            <img class="brand-mark" src="images/BRAHMMY.png" alt="Brahman Origins shield logo" width="42" height="42">
             <span class="brand-text"><strong>Brahman Origins</strong><span>University of Batangas</span></span>
           </a>
           <p>A companion player portal for the Brahman Origins Unity WebGL game an open-world capstone project inspired by the UB student journey.</p>
@@ -153,19 +154,15 @@
           <a href="index.html#about">About</a>
           <a href="index.html#journey">The Journey</a>
           <a href="index.html#features">Game Features</a>
-          <a href="index.html#campus">Campuses</a>
         </div>
         <div class="footer-col">
           <h4>Play</h4>
           <a href="guidelines.html">How to Play</a>
-          <a href="index.html#leaderboard">Leaderboard</a>
-          <a href="index.html#events">Events</a>
           <a href="index.html#loyalty">Loyalty Award</a>
         </div>
         <div class="footer-col">
           <h4>Account</h4>
           <a href="login.html">Login</a>
-          <a href="#" data-play-game>Play the Game</a>
           <a href="https://ub.edu.ph" target="_blank" rel="noopener">University of Batangas</a>
         </div>
       </div>
@@ -176,6 +173,7 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="main.js"></script>
 </body>
 </html>

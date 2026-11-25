@@ -27,11 +27,161 @@ function getSupabase() {
   /* ==========================================================================
      CONFIGURATIONS
      ========================================================================== */
-  const GAME_URL = null; // Set to Unity WebGL build URL when deployed
-    const GOOGLE_CLIENT_ID = "964623719325-98f01kp5ooeeftst9hulhsou4oftukfs.apps.googleusercontent.com";
+  const GOOGLE_CLIENT_ID = "964623719325-98f01kp5ooeeftst9hulhsou4oftukfs.apps.googleusercontent.com";
+
   /* ==========================================================================
      1. MOBILE NAVIGATION
      ========================================================================== */
+  /* ==========================================================================
+     0. NAV USER STATE — runs on every page
+     ========================================================================== */
+  (async () => {
+    const sb = getSupabase();
+    let canPlay    = false;
+    let isLoggedIn = false;
+    let displayName = "";
+
+    // Check Supabase session
+    if (sb) {
+      try {
+        const { data: { session } } = await sb.auth.getSession();
+        if (session) {
+          canPlay    = true;
+          isLoggedIn = true;
+
+          // Try to get name from profile first
+          try {
+            const { data: profile } = await sb
+              .from("profiles")
+              .select("display_name, name")
+              .eq("id", session.user.id)
+              .single();
+            displayName = profile?.display_name || profile?.name || "";
+          } catch { /* ignore */ }
+
+          // Fall back to metadata or email
+          if (!displayName) {
+            displayName = session.user.user_metadata?.full_name
+              || session.user.user_metadata?.name
+              || session.user.email?.split("@")[0]
+              || "UBian";
+          }
+        }
+      } catch { /* ignore */ }
+    }
+
+    // Check guest flag
+    const isGuest = !isLoggedIn && sessionStorage.getItem("brahman_guest") === "1";
+    if (isGuest) {
+      canPlay     = true;
+      displayName = "Guest";
+    }
+
+    const firstName = isGuest ? "Guest" : displayName.split(" ")[0];
+    const initials  = isGuest ? "G" : (displayName.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2) || "UB");
+
+    // --- Navbar: swap Login for user info + logout on any page ---
+    const navLoginItem = document.getElementById("nav-login-item");
+    const navUserItem  = document.getElementById("nav-user-item");
+    const navAvatar    = document.getElementById("nav-avatar");
+    const navUsername  = document.getElementById("nav-username");
+
+    if (canPlay && navLoginItem && navUserItem) {
+      navLoginItem.style.display = "none";
+      navUserItem.style.cssText  = "display:flex;align-items:center;gap:10px;";
+
+      if (navAvatar) {
+        navAvatar.textContent = initials;
+        navAvatar.style.cssText = `
+          display:inline-flex;align-items:center;justify-content:center;
+          width:30px;height:30px;border-radius:50%;
+          background:var(--gold-400,#d4af37);
+          color:#1a0509;font-size:0.72rem;font-weight:800;
+          letter-spacing:0.02em;flex-shrink:0;
+        `;
+      }
+
+      if (navUsername) {
+        navUsername.textContent = firstName;
+        navUsername.style.cssText = `
+          font-size:0.78rem;font-weight:700;letter-spacing:0.04em;
+          text-transform:uppercase;color:#ffffff;
+        `;
+      }
+
+      const logoutEl = document.getElementById("index-logout-btn");
+      if (logoutEl) {
+        logoutEl.style.cssText = `
+          background:transparent;
+          border:1px solid rgba(255,255,255,0.3);
+          border-radius:999px;
+          padding:7px 18px;
+          cursor:pointer;
+          font-size:0.78rem;font-weight:700;
+          letter-spacing:0.04em;text-transform:uppercase;
+          color:#ffffff;
+          transition:border-color 0.2s ease,color 0.2s ease;
+        `;
+        logoutEl.onmouseenter = () => {
+          logoutEl.style.borderColor = "var(--gold-400,#d4af37)";
+          logoutEl.style.color = "var(--gold-400,#d4af37)";
+        };
+        logoutEl.onmouseleave = () => {
+          logoutEl.style.borderColor = "rgba(255,255,255,0.3)";
+          logoutEl.style.color = "#ffffff";
+        };
+      }
+    }
+
+    // --- Index-only: play button + welcome message ---
+    const heroActions     = document.getElementById("hero-actions");
+    const heroWelcome     = document.getElementById("hero-welcome");
+    const heroWelcomeText = document.getElementById("hero-welcome-text");
+
+    if (heroActions) {
+      if (canPlay) {
+        heroActions.innerHTML = `<a href="#" class="btn btn-primary" id="play-game-btn">Play the Game</a>`;
+      } else {
+        heroActions.innerHTML = `
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+            <a href="login.html" class="btn btn-primary">Login to Play</a>
+            <span style="color:var(--text-secondary);font-size:0.92rem;">
+              You need an account to start your journey.
+            </span>
+          </div>`;
+      }
+
+      if (canPlay && heroWelcome && heroWelcomeText) {
+        heroWelcomeText.textContent = `Welcome back, UBian ${firstName}! 👋`;
+        heroWelcome.style.display = "block";
+      }
+    }
+
+    // --- Logout button (works on any page) ---
+    const logoutBtn = document.getElementById("index-logout-btn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", async () => {
+        const sb = getSupabase();
+        if (sb) {
+          try { await sb.auth.signOut(); } catch { /* best-effort */ }
+        }
+        sessionStorage.removeItem("brahman_guest");
+        window.location.href = "login.html";
+      });
+    }
+  })();
+
+  /* ==========================================================================
+     0b. LOGIN PAGE — GUEST BUTTON
+     ========================================================================== */
+  const guestBtn = document.getElementById("guest-btn");
+  if (guestBtn) {
+    guestBtn.addEventListener("click", () => {
+      sessionStorage.setItem("brahman_guest", "1");
+      window.location.href = "index.html";
+    });
+  }
+
   const navToggle = document.querySelector(".nav-toggle");
   const navLinks  = document.querySelector(".nav-links");
 
@@ -107,7 +257,6 @@ function getSupabase() {
     }
 
     const aboutSection       = document.querySelector("#about");
-    const leaderboardSection = document.querySelector("#leaderboard");
     const scrollY            = window.scrollY;
     const header             = document.querySelector(".site-header");
     const headerOffset       = header ? header.offsetHeight + 60 : 120;
@@ -115,11 +264,7 @@ function getSupabase() {
 
     let activeKey = "home";
     const aboutTop       = aboutSection       ? aboutSection.offsetTop       : Infinity;
-    const leaderboardTop = leaderboardSection ? leaderboardSection.offsetTop : Infinity;
-
-    if (leaderboardSection && currentScrollPos >= leaderboardTop) {
-      activeKey = "leaderboard";
-    } else if (aboutSection && currentScrollPos >= aboutTop) {
+    if (aboutSection && currentScrollPos >= aboutTop) {
       activeKey = "about";
     }
 
@@ -128,7 +273,6 @@ function getSupabase() {
       const href    = link.getAttribute("href") || "";
       let isMatch   = false;
       if      (activeKey === "about"       && href.includes("#about"))       isMatch = true;
-      else if (activeKey === "leaderboard" && href.includes("#leaderboard")) isMatch = true;
       else if (activeKey === "home" &&
                (href === "index.html" || href === "#" || href === "/" || href.endsWith("index.html")))
         isMatch = true;
@@ -183,7 +327,6 @@ function getSupabase() {
     const msgEl = toast.querySelector(".toast-msg");
     if (msgEl) msgEl.textContent = message;
 
-    // Colour the dot for error toasts
     const dot = toast.querySelector(".dot");
     if (dot) dot.style.background = type === "error" ? "#dc2626" : "";
 
@@ -193,75 +336,7 @@ function getSupabase() {
   }
 
   /* ==========================================================================
-     5. DYNAMIC LEADERBOARD RENDERER
-     Populated from Supabase when available; falls back to mock data.
-     ========================================================================== */
-  const mockLeaderboardData = [
-    { rank: "#01", name: "Miguel Santos",    initials: "MS", stage: "College (BSIT)",     level: 42, xp: "18,940 XP" },
-    { rank: "#02", name: "Alyssa Reyes",     initials: "AR", stage: "College (BSCS)",     level: 39, xp: "16,820 XP" },
-    { rank: "#03", name: "Christian Cruz",   initials: "CC", stage: "Senior High (STEM)", level: 35, xp: "14,500 XP" },
-    { rank: "#04", name: "Kai Alvarado",     initials: "KA", stage: "College (BSIT)",     level: 24, xp: "12,420 XP" },
-    { rank: "#05", name: "Bea Dimaculangan", initials: "BD", stage: "High School",        level: 19, xp: "9,180 XP"  }
-  ];
-
-  function renderLeaderboard(rows) {
-    const tbody = document.querySelector(".leaderboard-table tbody");
-    if (!tbody) return;
-
-    const data = rows || mockLeaderboardData;
-    tbody.innerHTML = data.map((row) => `
-      <tr>
-        <td class="lb-rank"><strong>${row.rank || ("#" + String(row.rank_num || 0).padStart(2,"0"))}</strong></td>
-        <td>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span class="lb-avatar">${row.initials || (row.name || "?").split(" ").map(n => n[0]).join("").toUpperCase().substring(0,2)}</span>
-            <strong>${row.name}</strong>
-          </div>
-        </td>
-        <td><span class="stage-pill">${row.stage || row.course || "—"}</span></td>
-        <td><strong>LVL ${row.level || 0}</strong></td>
-        <td class="lb-xp">${row.xp || ((row.xp_total || 0).toLocaleString() + " XP")}</td>
-      </tr>`).join("");
-  }
-
-  async function loadLeaderboard() {
-    const sb = getSupabase();
-    if (!sb) { renderLeaderboard(); return; }
-    try {
-      const { data, error } = await sb
-        .from("players")
-        .select("name, course, level, xp_total")
-        .order("xp_total", { ascending: false })
-        .limit(10);
-      if (error || !data || !data.length) { renderLeaderboard(); return; }
-      renderLeaderboard(data.map((p, i) => ({
-        rank:     "#" + String(i + 1).padStart(2, "0"),
-        name:     p.name || "Unknown",
-        initials: (p.name || "?").split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2),
-        stage:    p.course || "—",
-        level:    p.level || 0,
-        xp:       (p.xp_total || 0).toLocaleString() + " XP"
-      })));
-    } catch { renderLeaderboard(); }
-  }
-
-  /* ==========================================================================
-     6. PLAY GAME BUTTON HANDLER
-     ========================================================================== */
-  document.querySelectorAll("[data-play-game]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      if (!GAME_URL) {
-        showToast("The Unity WebGL build isn't deployed yet — check back soon, UBian!");
-      } else {
-        window.open(GAME_URL, "_blank", "noopener,noreferrer");
-      }
-    });
-  });
-
-  /* ==========================================================================
-     7. EMAIL & PASSWORD LOGIN  (TASK 5)
-     Uses supabase.auth.signInWithPassword; redirects on success.
+     7. EMAIL & PASSWORD LOGIN
      ========================================================================== */
   const loginForm = document.querySelector("#login-form");
   if (loginForm) {
@@ -284,7 +359,6 @@ function getSupabase() {
       const email    = emailInput.value.trim().toLowerCase();
       const password = passwordInput ? passwordInput.value : "";
 
-      // Validate — allow any email for Supabase auth but surface UB-only reminder
       if (!email) {
         showFieldError(errorEl, emailInput, "Please enter your email address.");
         return;
@@ -310,7 +384,6 @@ function getSupabase() {
         return;
       }
 
-      // Redirect based on role stored in user_metadata or profiles table
       await redirectAfterLogin(authData.user);
     });
   }
@@ -334,9 +407,7 @@ function getSupabase() {
   }
 
   /* ==========================================================================
-     8. GOOGLE SIGN-IN INTEGRATION  (TASK 4)
-     After verifying UB email, calls supabase.auth.signInWithIdToken so a
-     real Supabase session is created, then redirects by role.
+     8. GOOGLE SIGN-IN INTEGRATION
      ========================================================================== */
   const googleContainer = document.querySelector("#google-signin");
 
@@ -365,25 +436,6 @@ function getSupabase() {
         return;
       }
 
-      // Decode JWT payload to check domain (no library needed)
-      let payload = null;
-      try {
-        const base64 = response.credential.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-        payload = JSON.parse(decodeURIComponent(
-          atob(base64).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join("")
-        ));
-      } catch {
-        showGoogleError("Unable to process your Google account.");
-        return;
-      }
-
-      const email = (payload.email || "").toLowerCase();
-      if (!email) {
-        showGoogleError("Could not read your email from the Google account.");
-        return;
-      }
-
-      // ── Create a real Supabase session via the Google ID token ──
       const sb = getSupabase();
       if (!sb) {
         showToast("Authentication service unavailable. Please reload.", "error");
@@ -392,22 +444,30 @@ function getSupabase() {
 
       showToast("Verifying your UB account…");
 
-      const { data: authData, error } = await sb.auth.signInWithIdToken({
-        provider:    "google",
-        token:       response.credential,
-        nonce:       undefined
-      });
+      try {
+        // Supabase handles the Google JWT token directly
+        const { data: authData, error } = await sb.auth.signInWithIdToken({
+          provider: "google",
+          token: response.credential
+        });
 
-      if (error) {
-        console.error("Supabase Google auth error:", error);
-        showGoogleError("Sign-in failed: " + (error.message || "please try again."));
-        return;
+        if (error) {
+          console.error("Supabase Google auth error:", error);
+          showGoogleError("Sign-in failed: " + (error.message || "please try again."));
+          return;
+        }
+
+        if (authData?.user) {
+          await redirectAfterLogin(authData.user);
+        } else {
+          showGoogleError("Sign-in succeeded but no user returned.");
+        }
+      } catch (err) {
+        console.error("Google login error:", err);
+        showGoogleError("An error occurred during sign-in. Please try again.");
       }
-
-      await redirectAfterLogin(authData.user);
     }
 
-    // Expose for the GSI data-callback attribute
     window.handleGoogleLogin = handleGoogleLogin;
 
     function initializeGoogleSignIn() {
@@ -446,11 +506,6 @@ function getSupabase() {
     }
   }
 
-  /* --------------------------------------------------------------------------
-     AUTH HELPER: redirect after a successful login by checking user role.
-     Role is stored in user_metadata.role (set via Supabase admin functions)
-     or in the public.profiles table.  Falls back to student.html.
-     -------------------------------------------------------------------------- */
   async function redirectAfterLogin(user) {
     if (!user) { window.location.href = "student.html"; return; }
 
@@ -474,7 +529,7 @@ function getSupabase() {
     if (finalRole === "admin") {
       window.location.href = "admin.html";
     } else {
-      window.location.href = "student.html";
+      window.location.href = "index.html";
     }
   }
 
@@ -512,8 +567,7 @@ function getSupabase() {
   }
 
   /* ==========================================================================
-     10. ADMIN STUDENT DIRECTORY SEARCH & FILTER  (TASK 6)
-     Debounced input re-queries Supabase for accurate server-side results.
+     10. ADMIN STUDENT DIRECTORY SEARCH & FILTER
      ========================================================================== */
   function initStudentDirectoryFilter() {
     const searchInput    = document.querySelector("#student-search-input");
@@ -549,8 +603,28 @@ function getSupabase() {
       const card     = btn.closest(".report-ticket");
       const ticketId = btn.getAttribute("data-ticket-id");
 
+      if (btn.classList.contains("btn-outline-dark-sm") && card) {
+        if (card.ticket) {
+          showTicketDetailsModal(card.ticket);
+          return;
+        }
+
+        const tag = card.querySelector(".badge-ticket-tech")?.textContent.trim();
+        const time = card.querySelector(".ticket-time")?.textContent.trim();
+        const title = card.querySelector(".ticket-title")?.textContent.trim();
+        const reporter = card.querySelector(".ticket-reporter strong")?.textContent.trim();
+
+        showTicketDetailsModal({
+          tag: tag || "Technical Issue",
+          created_at: time ? null : undefined,
+          title: title || "Untitled Ticket",
+          description: "No description provided.",
+          user_name: reporter || "Unknown Player"
+        });
+        return;
+      }
+
       if (btn.classList.contains("btn-gold-sm")) {
-        // Persist resolution to Supabase
         if (ticketId) {
           const sb = getSupabase();
           if (sb) {
@@ -619,8 +693,7 @@ function getSupabase() {
   }
 
   /* ==========================================================================
-     13. LOGOUT HANDLER  (TASK 8)
-     Signs out of Supabase session and redirects to login.html.
+     13. LOGOUT HANDLER
      ========================================================================== */
   function initLogout() {
     document.querySelectorAll("#logout-btn, #admin-logout-btn").forEach((btn) => {
@@ -635,32 +708,100 @@ function getSupabase() {
   }
 
   /* ==========================================================================
+     13a. ADMIN ACCOUNT UPDATE HELPER
+     ========================================================================== */
+  window.updateAdminAccount = async function(newEmail, newPassword, currentPassword) {
+    const sb = getSupabase();
+    if (!sb) {
+      console.error("Supabase not initialized");
+      return false;
+    }
+
+    try {
+      const { data: currentSession } = await sb.auth.signInWithPassword({
+        email: "brahmanorigins@gmail.com",
+        password: "brahmmy123"
+      });
+
+      if (!currentSession?.user) {
+        console.error("Failed to authenticate with current credentials");
+        return false;
+      }
+
+      if (newEmail) {
+        const { error: emailError } = await sb.auth.updateUser({ email: newEmail });
+        if (emailError) {
+          console.error("Email update error:", emailError);
+          return false;
+        }
+      }
+
+      if (newPassword) {
+        const { error: passwordError } = await sb.auth.updateUser({ password: newPassword });
+        if (passwordError) {
+          console.error("Password update error:", passwordError);
+          return false;
+        }
+      }
+
+      console.log("Admin account updated successfully!");
+      return true;
+    } catch (err) {
+      console.error("Account update error:", err);
+      return false;
+    }
+  };
+
+  /* ==========================================================================
      14. SUPABASE LIVE DATA — OVERVIEW, STUDENTS, TICKETS
      ========================================================================== */
 
   async function loadSupabaseOverview() {
     const sb = getSupabase();
-    if (!sb) return;
+    if (!sb) {
+      console.warn("Supabase not initialized");
+      return;
+    }
 
     try {
-      const [
-        { count: activeCount },
-        { count: nonUbCount  },
-        { count: ticketCount }
-      ] = await Promise.all([
-        sb.from("players").select("*", { count: "exact", head: true }).eq("active", true),
-        sb.from("players").select("*", { count: "exact", head: true }).not("email", "like", "%@ub.edu.ph"),
-        sb.from("tickets").select("*", { count: "exact", head: true }).eq("status", "open")
-      ]);
+      console.log("🔍 Loading overview stats...");
+      
+      // Fetch all student profiles to count locally
+      const { data: allProfiles, error: profilesError } = await sb
+        .from("profiles")
+        .select("id, email, active, role");
+      
+      if (profilesError) {
+        console.error("❌ Profiles error:", profilesError);
+        return;
+      }
 
+      // Count students (exclude admins)
+      const students = allProfiles?.filter(p => p.role !== 'admin') || [];
+      const activeCount = students.filter(p => p.active === true).length;
+      const nonUbCount = students.filter(p => !p.email?.includes('@ub.edu.ph')).length;
+
+      console.log("✅ Counts:", { activeCount, nonUbCount, totalStudents: students.length });
+
+      // Get tickets count
+      const { count: ticketCount, error: ticketError } = await sb
+        .from("tickets")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "open");
+
+      if (ticketError) {
+        console.error("❌ Tickets error:", ticketError);
+      }
+
+      // Update UI
       const statValues = document.querySelectorAll(".admin-metrics-row .stat-value");
       if (statValues.length >= 3) {
-        if (activeCount  !== null) statValues[0].textContent = Number(activeCount).toLocaleString();
-        if (nonUbCount   !== null) statValues[1].textContent = Number(nonUbCount).toLocaleString();
-        if (ticketCount  !== null) statValues[2].textContent = Number(ticketCount).toLocaleString();
+        statValues[0].textContent = Number(activeCount).toLocaleString();
+        statValues[1].textContent = Number(nonUbCount).toLocaleString();
+        if (ticketCount !== null) statValues[2].textContent = Number(ticketCount).toLocaleString();
       }
     } catch (err) {
-      console.error("Overview fetch error:", err);
+      console.error("❌ Overview fetch error:", err);
     }
   }
 
@@ -669,7 +810,6 @@ function getSupabase() {
     const tableBody = document.querySelector("#student-table-body");
     if (!tableBody) return;
 
-    // Show loading skeleton
     tableBody.innerHTML = `
       <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted);">
         Loading students…
@@ -678,39 +818,54 @@ function getSupabase() {
     const paginationInfo = document.querySelector(".pagination-info");
 
     if (!sb) {
-      // No Supabase available — keep the static rows already in the HTML
+      console.warn("Supabase not initialized");
       tableBody.innerHTML = "";
       return;
     }
 
     try {
-      let query = sb.from("players").select("*", { count: "exact" });
-
-      if (searchQuery) {
-        query = query.or(`name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`);
-      }
-      if (nonUbOnly) {
-        query = query.not("email", "like", "%@ub.edu.ph");
-      }
-
-      // Limit to first 50 for the paginated display
-      query = query.order("name", { ascending: true }).range(0, 49);
-
-      const { data: players, count, error } = await query;
+      console.log("🔍 Loading students...");
+      
+      // Get all student profiles
+      const { data: allProfiles, error } = await sb
+        .from("profiles")
+        .select("*")
+        .neq("role", "admin")
+        .order("name", { ascending: true });
 
       if (error) {
-        console.error("Students fetch error:", error);
+        console.error("❌ Students fetch error:", error);
         tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--error-color);">
-          Error loading students. Please refresh.</td></tr>`;
+          Error: ${error.message || "Unknown error"}</td></tr>`;
         return;
       }
 
+      let players = allProfiles || [];
+
+      // Apply filters
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        players = players.filter(p => 
+          (p.name?.toLowerCase().includes(query)) || 
+          (p.email?.toLowerCase().includes(query))
+        );
+      }
+      if (nonUbOnly) {
+        players = players.filter(p => !p.email?.includes('@ub.edu.ph'));
+      }
+
+      const total = allProfiles?.length || 0;
+      const count = players.length;
+
+      console.log("✅ Students loaded:", { total, count, filtered: searchQuery || nonUbOnly });
+
+      const paginationInfo = document.querySelector(".pagination-info");
       if (paginationInfo) {
-        const shown = players ? players.length : 0;
-        const total = count  ?? shown;
-        paginationInfo.innerHTML = searchQuery || nonUbOnly
-          ? `Showing <strong>${shown}</strong> filtered result${shown !== 1 ? "s" : ""}`
-          : `Showing <strong>1–${shown}</strong> of <strong>${total.toLocaleString()}</strong> students`;
+        if (searchQuery || nonUbOnly) {
+          paginationInfo.innerHTML = `Showing <strong>${count}</strong> filtered result${count !== 1 ? "s" : ""}`;
+        } else {
+          paginationInfo.innerHTML = `Showing <strong>${count}</strong> of <strong>${total.toLocaleString()}</strong> students`;
+        }
       }
 
       if (!players || players.length === 0) {
@@ -730,7 +885,7 @@ function getSupabase() {
           .split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
 
         return `
-          <tr>
+          <tr class="student-row-clickable" data-student-id="${player.id}" style="cursor:pointer;">
             <td>
               <div class="player-col">
                 <div class="avatar-sm-gold">${initials}</div>
@@ -748,9 +903,18 @@ function getSupabase() {
               <span class="status-dot ${statusClass}" aria-hidden="true"></span>
               ${statusText}
             </td>
-            <td class="text-right"><a href="#" class="link-action">View details &rarr;</a></td>
+            <td class="text-right"><a href="#" class="link-action" onclick="event.stopPropagation();">View details &rarr;</a></td>
           </tr>`;
       }).join("");
+
+      // Add click handlers to student rows
+      document.querySelectorAll(".student-row-clickable").forEach(row => {
+        row.addEventListener("click", () => {
+          const studentId = row.getAttribute("data-student-id");
+          const student = players.find(p => p.id === studentId);
+          if (student) showStudentDetailsModal(student);
+        });
+      });
 
     } catch (err) {
       console.error("Students query error:", err);
@@ -759,11 +923,77 @@ function getSupabase() {
     }
   }
 
+  function showStudentDetailsModal(student) {
+    const modal = document.getElementById("modal-student-details");
+    if (!modal) return;
+
+    const initials = (student.name || "P")
+      .split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
+
+    document.getElementById("detail-avatar").textContent = initials;
+    document.getElementById("detail-name").textContent = student.name || "Unknown";
+    document.getElementById("detail-email").textContent = student.email || "—";
+    document.getElementById("detail-course").textContent = student.course || "N/A";
+    document.getElementById("detail-level").textContent = student.level || 1;
+    document.getElementById("detail-xp").textContent = (student.xp_total || 0).toLocaleString();
+    document.getElementById("detail-quests").textContent = student.quests_completed || 0;
+    const statusBadge = document.getElementById("detail-status-badge");
+    if (statusBadge) {
+      if (student.active) {
+        statusBadge.textContent = "Active";
+        statusBadge.style.background = "rgba(34,197,94,0.1)";
+        statusBadge.style.color = "#22c55e";
+        statusBadge.style.borderColor = "rgba(34,197,94,0.3)";
+      } else {
+        statusBadge.textContent = "Inactive";
+        statusBadge.style.background = "rgba(107,114,128,0.1)";
+        statusBadge.style.color = "#9ca3af";
+        statusBadge.style.borderColor = "rgba(107,114,128,0.3)";
+      }
+    }
+
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden", "false");
+  }
+
+  function showTicketDetailsModal(ticket) {
+    const modal = document.getElementById("modal-ticket-details");
+    if (!modal) return;
+
+    const tag = ticket.tag || "Technical Issue";
+    const timeStr = ticket.created_at
+      ? timeSince(new Date(ticket.created_at))
+      : "Recently";
+
+    document.getElementById("detail-ticket-tag").textContent = tag;
+    document.getElementById("detail-ticket-time").textContent = timeStr;
+    document.getElementById("detail-ticket-title").textContent = ticket.title || "Untitled Ticket";
+    document.getElementById("detail-ticket-description").textContent = ticket.description || "No description provided.";
+    document.getElementById("detail-ticket-reporter").textContent = ticket.user_name || "Unknown Player";
+
+    const tagBadge = document.getElementById("detail-ticket-tag");
+    if (tagBadge) {
+      const isAmber = tag.toLowerCase().includes("feedback");
+      if (isAmber) {
+        tagBadge.style.background = "rgba(245,158,11,0.1)";
+        tagBadge.style.color = "#b45309";
+        tagBadge.style.borderColor = "rgba(245,158,11,0.3)";
+      } else {
+        tagBadge.style.background = "rgba(220,38,38,0.1)";
+        tagBadge.style.color = "#dc2626";
+        tagBadge.style.borderColor = "rgba(220,38,38,0.3)";
+      }
+    }
+
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden", "false");
+  }
+
   async function loadSupabaseTickets() {
     const sb   = getSupabase();
     const feed = document.querySelector(".reports-feed");
     if (!feed) return;
-    if (!sb)   return; // Keep hardcoded tickets if no Supabase
+    if (!sb)   return;
 
     try {
       const { data: tickets, error } = await sb
@@ -808,6 +1038,8 @@ function getSupabase() {
         const card = document.createElement("div");
         card.className = "admin-card-surface report-ticket";
         card.style.cssText = `border-left:4px solid ${borderCol};padding:22px;margin-bottom:15px;`;
+        card.setAttribute("data-ticket-id", ticket.id);
+        card.ticket = ticket;
         card.innerHTML = `
           <div class="ticket-header">
             <span class="badge-ticket-tech" ${tagStyle}>${tag}</span>
@@ -829,7 +1061,6 @@ function getSupabase() {
     }
   }
 
-  /** Human-readable relative time ("5 mins ago", "2 hrs ago"). */
   function timeSince(date) {
     const secs = Math.floor((Date.now() - date.getTime()) / 1000);
     if (secs < 60)   return "just now";
@@ -840,7 +1071,6 @@ function getSupabase() {
 
   /* ==========================================================================
      15. SESSION GUARD + ROLE-BASED PAGE PROTECTION
-     Hides body until role is confirmed to prevent flash of wrong content.
      ========================================================================== */
   async function checkSessionGuard() {
     const page = window.location.pathname.split("/").pop() || "index.html";
@@ -848,7 +1078,6 @@ function getSupabase() {
     const isStudent = page === "student.html";
     if (!isAdmin && !isStudent) return;
 
-    // Hide body immediately — prevents flash of wrong page content
     document.body.style.visibility = "hidden";
 
     const sb = getSupabase();
@@ -860,15 +1089,12 @@ function getSupabase() {
       return;
     }
 
-    // Determine role: profiles table first, then user_metadata, then email fallback
     let role = "student";
     const email = (session.user.email || "").toLowerCase();
 
-    // user_metadata set at sign-up
     const metaRole = session.user.user_metadata?.role;
     if (metaRole === "admin") role = "admin";
 
-    // profiles table (most reliable)
     try {
       const { data: profile } = await sb
         .from("profiles")
@@ -878,7 +1104,6 @@ function getSupabase() {
       if (profile?.role) role = profile.role;
     } catch { /* ignore */ }
 
-    // Enforce routing
     if (isAdmin && role !== "admin") {
       window.location.href = "student.html";
       return;
@@ -888,13 +1113,11 @@ function getSupabase() {
       return;
     }
 
-    // Correct page — reveal body
     document.body.style.visibility = "";
   }
 
   /* ==========================================================================
      16. STUDENT — COMPOSE INQUIRY
-     Posts to api/submit-inquiry.php
      ========================================================================== */
   function initComposeInquiry() {
     const modal      = document.getElementById("modal-inquiry");
@@ -920,16 +1143,38 @@ function getSupabase() {
       const email   = form.querySelector("#inq-email")?.value.trim()   || "";
       const message = form.querySelector("#inq-message")?.value.trim() || "";
 
-      let success = false;
-
-      // Try Supabase direct insert first
-      if (sb) {
-        const { error } = await sb.from("inquiries").insert({ name, email, message });
-        success = !error;
-        if (error) console.error("Inquiry insert error:", error);
+      // Validation
+      if (!name || !email || !message) {
+        showToast("Please fill in all fields.", "error");
+        setLoading(submitBtn, false, "Send Inquiry");
+        return;
       }
 
-      // Fallback: PHP endpoint
+      let success = false;
+
+      // Try Supabase first - insert into tickets table with Inquiry tag
+      if (sb) {
+        try {
+          const { data, error } = await sb.from("tickets").insert({ 
+            user_name: name,
+            email: email, 
+            title: "Inquiry: " + email,
+            description: message,
+            tag: "Inquiry",
+            status: "open"
+          });
+          if (!error) {
+            success = true;
+            console.log("✅ Inquiry sent via Supabase");
+          } else {
+            console.error("❌ Supabase inquiry error:", error);
+          }
+        } catch (err) {
+          console.error("❌ Supabase exception:", err);
+        }
+      }
+
+      // Fallback to PHP API
       if (!success) {
         try {
           const res = await fetch("api/submit-inquiry.php", {
@@ -937,8 +1182,15 @@ function getSupabase() {
             headers: { "Content-Type": "application/json" },
             body:    JSON.stringify({ name, email, message })
           });
-          success = res.ok;
-        } catch (err) { console.error("PHP fallback error:", err); }
+          if (res.ok) {
+            success = true;
+            console.log("✅ Inquiry sent via PHP API");
+          } else {
+            console.error("❌ PHP API returned:", res.status, res.statusText);
+          }
+        } catch (err) { 
+          console.error("❌ PHP API error:", err); 
+        }
       }
 
       setLoading(submitBtn, false, "Send Inquiry");
@@ -953,7 +1205,6 @@ function getSupabase() {
 
   /* ==========================================================================
      17. STUDENT — REPORT BUG / FEEDBACK
-     Posts to api/submit-ticket.php
      ========================================================================== */
   function initReportBug() {
     const modal    = document.getElementById("modal-report");
@@ -979,13 +1230,13 @@ function getSupabase() {
       const description = form.querySelector("#rep-desc")?.value.trim()        || "";
       const tag         = form.querySelector("#rep-tag")?.value                || "Technical Issue";
 
-      // Get current player id if available
       let player_id = null;
       if (sb) {
         const { data: { session } } = await sb.auth.getSession();
         if (session) {
+          // UPDATED FROM "players" TO "profiles"
           const { data: p } = await sb
-            .from("players").select("id").eq("user_id", session.user.id).single();
+            .from("profiles").select("id").eq("user_id", session.user.id).single();
           if (p) player_id = p.id;
         }
       }
@@ -1034,8 +1285,9 @@ function getSupabase() {
 
     try {
       const { data: inquiries, error } = await sb
-        .from("inquiries")
+        .from("tickets")
         .select("*")
+        .eq("tag", "Inquiry")
         .order("created_at", { ascending: false });
 
       if (error) { console.error("Inquiries fetch:", error); return; }
@@ -1066,9 +1318,9 @@ function getSupabase() {
               <span class="badge-ticket-tech" style="background:rgba(212,175,55,0.1);color:var(--gold-500);border-color:rgba(212,175,55,0.3);">School Inquiry</span>
               <span class="ticket-time meta-timestamp">${time}</span>
             </div>
-            <p style="margin:10px 0 4px;font-weight:700;color:var(--text-primary);">${inq.name || "Anonymous"}</p>
+            <p style="margin:10px 0 4px;font-weight:700;color:var(--text-primary);">${inq.user_name || inq.name || "Anonymous"}</p>
             <p style="margin:0 0 12px;font-size:0.85rem;color:var(--text-muted);">${inq.email || ""}</p>
-            <p style="font-size:0.93rem;color:var(--text-secondary);margin-bottom:16px;">${inq.message || ""}</p>
+            <p style="font-size:0.93rem;color:var(--text-secondary);margin-bottom:16px;">${inq.description || inq.message || ""}</p>
             <div class="ticket-footer">
               <span class="stat-trend ${statusClass}" style="font-size:0.75rem;">${statusLabel}</span>
               <div class="ticket-actions">
@@ -1081,12 +1333,11 @@ function getSupabase() {
           </div>`;
       }).join("");
 
-      // Wire resolve buttons
       container.addEventListener("click", async e => {
         const btn = e.target.closest("[data-resolve-inq]");
         if (!btn) return;
         const inqId = btn.getAttribute("data-resolve-inq");
-        const { error } = await sb.from("inquiries").update({ status: "resolved" }).eq("id", inqId);
+        const { error } = await sb.from("tickets").update({ status: "resolved" }).eq("id", inqId);
         if (!error) {
           showToast("Inquiry marked as resolved.");
           loadSupabaseInquiries();
@@ -1100,39 +1351,442 @@ function getSupabase() {
   }
 
   /* ==========================================================================
+     19. STUDENT PORTAL — LIVE PROFILE LOADER
+     ========================================================================== */
+  async function loadStudentProfile() {
+    const sb = getSupabase();
+    if (!sb) return;
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+
+    const userId = session.user.id;
+    const email  = (session.user.email || "").toLowerCase();
+
+    let player = null;
+    try {
+      // UPDATED FROM "players" TO "profiles"
+      let { data, error } = await sb
+        .from("profiles")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
+
+      if (error || !data) {
+        const res = await sb
+          .from("profiles")
+          .select("*")
+          .eq("email", email)
+          .single();
+        data = res.data;
+      }
+      player = data;
+    } catch { /* no player row yet */ }
+
+    const level   = player?.level    ?? 1;
+    const xpTotal = player?.xp_total ?? 0;
+    const xpForCurrentLevel = (level - 1) * 500;
+    const xpForNextLevel    = level * 500;
+    const xpIntoLevel       = Math.max(0, xpTotal - xpForCurrentLevel);
+    const xpNeeded          = xpForNextLevel - xpForCurrentLevel;
+    const xpPercent         = Math.min(100, Math.round((xpIntoLevel / xpNeeded) * 100));
+
+    function getLevelTitle(lvl) {
+      if (lvl < 5)  return "New Recruit";
+      if (lvl < 10) return "Campus Explorer";
+      if (lvl < 20) return "Quest Seeker";
+      if (lvl < 30) return "Campus Guardian";
+      if (lvl < 40) return "Elite Scholar";
+      return "Brahman Legend";
+    }
+
+    const fullName   = player?.name  || session.user.user_metadata?.full_name || email;
+    const firstName  = fullName.split(" ")[0];
+    const initials   = fullName.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
+    const playerEmail = player?.email || email;
+    const points     = (player?.xp_total ?? 0).toLocaleString();
+    const questCount = player?.quests_completed ?? 0;
+    const title      = getLevelTitle(level);
+    const course     = player?.course || "";
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+    set("student-first-name",  firstName);
+    set("student-full-name",   fullName);
+    set("student-email",       playerEmail);
+    set("student-level-badge", `LEVEL ${level} · ${title.toUpperCase()}${course ? " · " + course : ""}`);
+    set("student-xp-value",    `${xpIntoLevel.toLocaleString()} / ${xpNeeded.toLocaleString()} XP`);
+    set("student-points",      points);
+    set("student-quests",      questCount.toString());
+
+    ["student-avatar-header", "student-avatar-card"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = initials;
+    });
+
+    const bar = document.getElementById("student-xp-bar");
+    if (bar) bar.style.width = xpPercent + "%";
+
+    const questList = document.getElementById("student-quest-list");
+    if (questList) {
+      let quests = [];
+      try {
+        const { data } = await sb
+          .from("quests")
+          .select("title, description, progress")
+          .eq("player_id", player?.id)
+          .eq("status", "active")
+          .order("updated_at", { ascending: false })
+          .limit(4);
+        quests = data || [];
+      } catch { /* quests table may not exist yet */ }
+
+      if (quests.length > 0) {
+        questList.innerHTML = quests.map(q => `
+          <li class="quest-item">
+            <div class="quest-info">
+              <span class="quest-title">${q.title}</span>
+              <span class="quest-desc">${q.description || ""}</span>
+            </div>
+            <span class="badge-gold-pill">${q.progress ?? 0}%</span>
+          </li>`).join("");
+      } else {
+        const dynamicQuests = [];
+        if (xpPercent < 100) {
+          dynamicQuests.push({
+            title: "Level Up",
+            desc:  `Earn ${(xpNeeded - xpIntoLevel).toLocaleString()} more XP to reach Level ${level + 1}`,
+            pct:   xpPercent
+          });
+        }
+
+        questList.innerHTML = dynamicQuests.map(q => `
+          <li class="quest-item">
+            <div class="quest-info">
+              <span class="quest-title">${q.title}</span>
+              <span class="quest-desc">${q.desc}</span>
+            </div>
+            <span class="badge-gold-pill">${q.pct}%</span>
+          </li>`).join("");
+      }
+    }
+
+    const activityFeed = document.getElementById("student-activity-feed");
+    if (activityFeed) {
+      let activity = [];
+      try {
+        const { data } = await sb
+          .from("activity_log")
+          .select("title, meta, xp_gain, created_at")
+          .eq("player_id", player?.id)
+          .order("created_at", { ascending: false })
+          .limit(5);
+        activity = data || [];
+      } catch { /* activity_log table may not exist yet */ }
+
+      if (activity.length > 0) {
+        activityFeed.innerHTML = activity.map(a => `
+          <li class="activity-item">
+            <div class="activity-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+            </div>
+            <div class="activity-details">
+              <span class="activity-title">${a.title}</span>
+              <span class="activity-meta">${a.meta || ""} · ${timeSince(new Date(a.created_at))}</span>
+            </div>
+            ${a.xp_gain ? `<span class="xp-gain-badge">+${a.xp_gain} XP</span>` : ""}
+          </li>`).join("");
+      } else {
+        activityFeed.innerHTML = `
+          <li class="activity-item" style="justify-content:center;">
+            <span style="color:var(--text-muted);font-size:0.9rem;">No recent activity yet — start playing to earn XP!</span>
+          </li>`;
+      }
+    }
+
+    const inqName  = document.getElementById("inq-name");
+    const inqEmail = document.getElementById("inq-email");
+    if (inqName  && !inqName.value)  inqName.value  = fullName;
+    if (inqEmail && !inqEmail.value) inqEmail.value = playerEmail;
+  }
+
+  /* ==========================================================================
      DOM INITIALIZERS
      ========================================================================== */
   document.addEventListener("DOMContentLoaded", async () => {
-    // Session guard (redirects before anything renders)
+    console.log("📍 Page loaded:", window.location.pathname);
+    
     await checkSessionGuard();
 
     updateActiveNav();
 
-    // Leaderboard (index.html)
-    if (document.querySelector(".leaderboard-table tbody")) {
-      await loadLeaderboard();
-    }
-
-    // Admin dashboard
     if (document.querySelector(".admin-layout")) {
+      console.log("📍 Admin panel detected - loading data...");
       initAdminNavigation();
       initTicketActions();
       initEmptyStateActions();
-      await Promise.all([
-        loadSupabaseOverview(),
-        loadSupabaseStudents(),
-        loadSupabaseTickets(),
-        loadSupabaseInquiries()
-      ]);
+      
+      try {
+        await Promise.all([
+          loadSupabaseOverview(),
+          loadSupabaseStudents(),
+          loadSupabaseTickets(),
+          loadSupabaseInquiries()
+        ]);
+        console.log("✅ All admin data loaded!");
+      } catch (err) {
+        console.error("❌ Error loading admin data:", err);
+      }
+      
       initStudentDirectoryFilter();
     }
 
-    // Student portal
     if (document.querySelector(".student-canvas")) {
+      console.log("📍 Student page detected - loading profile...");
       initComposeInquiry();
       initReportBug();
+      await loadStudentProfile();
     }
 
     initLogout();
+
+    // Modal close handlers
+    const closeStudentDetailsBtn = document.getElementById("btn-close-student-details");
+    if (closeStudentDetailsBtn) {
+      closeStudentDetailsBtn.addEventListener("click", () => {
+        const modal = document.getElementById("modal-student-details");
+        if (modal) {
+          modal.style.display = "none";
+          modal.setAttribute("aria-hidden", "true");
+        }
+      });
+    }
+
+    const closeAdminSettingsBtn = document.getElementById("btn-close-admin-settings");
+    if (closeAdminSettingsBtn) {
+      closeAdminSettingsBtn.addEventListener("click", () => {
+        const modal = document.getElementById("modal-admin-settings");
+        if (modal) {
+          modal.style.display = "none";
+          modal.setAttribute("aria-hidden", "true");
+        }
+      });
+    }
+
+    const closeTicketDetailsBtn = document.getElementById("btn-close-ticket-details");
+    if (closeTicketDetailsBtn) {
+      closeTicketDetailsBtn.addEventListener("click", () => {
+        const modal = document.getElementById("modal-ticket-details");
+        if (modal) {
+          modal.style.display = "none";
+          modal.setAttribute("aria-hidden", "true");
+        }
+      });
+    }
+
+    // Admin avatar click handler
+    const adminAvatarBtn = document.querySelector(".admin-avatar");
+    if (adminAvatarBtn) {
+      adminAvatarBtn.addEventListener("click", async () => {
+        const sb = getSupabase();
+        if (sb) {
+          const { data: { session } } = await sb.auth.getSession();
+          if (session) {
+            document.getElementById("admin-email-display").textContent = session.user.email || "Admin";
+            const modal = document.getElementById("modal-admin-settings");
+            if (modal) {
+              modal.style.display = "flex";
+              modal.setAttribute("aria-hidden", "false");
+            }
+          }
+        }
+      });
+    }
+
+    // Admin password change form
+    const adminPasswordForm = document.getElementById("form-change-password");
+    if (adminPasswordForm) {
+      adminPasswordForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const currentPassword = document.getElementById("admin-current-password").value;
+        const newPassword = document.getElementById("admin-new-password").value;
+        const confirmPassword = document.getElementById("admin-confirm-password").value;
+
+        // Validation
+        if (!currentPassword) {
+          showToast("Please enter your current password.", "error");
+          return;
+        }
+
+        if (!newPassword || !confirmPassword) {
+          showToast("Please fill in both new password fields.", "error");
+          return;
+        }
+
+        if (newPassword !== confirmPassword) {
+          showToast("New passwords do not match.", "error");
+          return;
+        }
+
+        if (newPassword.length < 6) {
+          showToast("New password must be at least 6 characters long.", "error");
+          return;
+        }
+
+        if (currentPassword === newPassword) {
+          showToast("New password must be different from current password.", "error");
+          return;
+        }
+
+        const sb = getSupabase();
+        if (!sb) {
+          showToast("Authentication service unavailable.", "error");
+          return;
+        }
+
+        try {
+          const { data: { session } } = await sb.auth.getSession();
+          if (!session) {
+            showToast("Session expired. Please log in again.", "error");
+            return;
+          }
+
+          // Verify current password by attempting to sign in
+          const { error: verifyError } = await sb.auth.signInWithPassword({
+            email: session.user.email,
+            password: currentPassword
+          });
+
+          if (verifyError) {
+            showToast("Current password is incorrect.", "error");
+            return;
+          }
+
+          // Update password
+          const { error: updateError } = await sb.auth.updateUser({ password: newPassword });
+          if (updateError) {
+            showToast("Failed to update password: " + updateError.message, "error");
+            return;
+          }
+
+          showToast("Password updated successfully!");
+          adminPasswordForm.reset();
+          document.getElementById("modal-admin-settings").style.display = "none";
+          document.getElementById("modal-admin-settings").setAttribute("aria-hidden", "true");
+        } catch (err) {
+          showToast("Error updating password: " + err.message, "error");
+        }
+      });
+    }
+
+    // Close modals when clicking outside
+    const studentModal = document.getElementById("modal-student-details");
+    if (studentModal) {
+      studentModal.addEventListener("click", (e) => {
+        if (e.target === studentModal) {
+          studentModal.style.display = "none";
+          studentModal.setAttribute("aria-hidden", "true");
+        }
+      });
+    }
+
+    const adminSettingsModal = document.getElementById("modal-admin-settings");
+    if (adminSettingsModal) {
+      adminSettingsModal.addEventListener("click", (e) => {
+        if (e.target === adminSettingsModal) {
+          adminSettingsModal.style.display = "none";
+          adminSettingsModal.setAttribute("aria-hidden", "true");
+        }
+      });
+    }
+
+    const ticketModal = document.getElementById("modal-ticket-details");
+    if (ticketModal) {
+      ticketModal.addEventListener("click", (e) => {
+        if (e.target === ticketModal) {
+          ticketModal.style.display = "none";
+          ticketModal.setAttribute("aria-hidden", "true");
+        }
+      });
+    }
   });
 })();
+
+  /* ==========================================================================
+     DEBUG HELPER: Check admin auth and RLS access
+     ========================================================================== */
+  window.debugSupabaseAccess = async function() {
+    const sb = getSupabase();
+    if (!sb) {
+      console.log("❌ Supabase not initialized");
+      return;
+    }
+
+    console.log("📋 Checking Supabase access...\n");
+
+    // Check session
+    const { data: { session }, error: sessionError } = await sb.auth.getSession();
+    console.log("Session:", { 
+      user_id: session?.user?.id, 
+      email: session?.user?.email,
+    });
+
+    // Direct query - no filters
+    console.log("\n🔍 Test 1: Direct profiles query (no filters)...");
+    const { data: test1, error: err1 } = await sb
+      .from("profiles")
+      .select("id, name, role, email")
+      .limit(5);
+    
+    if (err1) {
+      console.error("❌ Error:", err1.message);
+    } else {
+      console.log("✅ Success! Got", test1?.length || 0, "records");
+      if (test1) console.log("Sample:", test1[0]);
+    }
+
+    // Query with neq filter
+    console.log("\n🔍 Test 2: Profiles query with .neq('role', 'admin')...");
+    const { data: test2, error: err2 } = await sb
+      .from("profiles")
+      .select("id, name, role, email")
+      .neq("role", "admin")
+      .limit(5);
+    
+    if (err2) {
+      console.error("❌ Error:", err2.message);
+    } else {
+      console.log("✅ Success! Got", test2?.length || 0, "records");
+    }
+
+    // Count query
+    console.log("\n🔍 Test 3: Count active students...");
+    const { count, error: err3 } = await sb
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("active", true)
+      .neq("role", "admin");
+    
+    if (err3) {
+      console.error("❌ Error:", err3.message);
+    } else {
+      console.log("✅ Success! Active students:", count);
+    }
+
+    // Tickets
+    console.log("\n🔍 Test 4: Open tickets...");
+    const { data: tickets, count: ticketCount, error: err4 } = await sb
+      .from("tickets")
+      .select("*", { count: "exact" })
+      .eq("status", "open");
+    
+    if (err4) {
+      console.error("❌ Error:", err4.message);
+    } else {
+      console.log("✅ Success! Open tickets:", ticketCount);
+    }
+
+    console.log("\n✅ All tests completed!");
+  };

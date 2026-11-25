@@ -6,6 +6,7 @@
 
   <title>Login | Brahman Origins</title>
 
+  <link rel="icon" type="image/png" href="images/BRAHMMY.png">
   <link rel="stylesheet" href="style.css">
 
   <!-- Google Identity Services -->
@@ -17,96 +18,30 @@
 
   <!-- ================= HEADER ================= -->
   <header class="site-header">
-    <div class="container">
+  <div class="container">
+    <a class="brand" href="index.html">
+      <img class="brand-mark" src="images/BRAHMMY.png" alt="Brahman Origins shield logo" width="42" height="42">
+      <span class="brand-text"><strong>Brahman Origins</strong><span>University of Batangas</span></span>
+    </a>
 
-      <a class="brand" href="index.html">
-        <svg
-          class="brand-mark"
-          viewBox="0 0 42 42"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-        >
-          <rect width="42" height="42" rx="10" fill="#1a0509"/>
+    <nav aria-label="Primary">
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html#about">About</a></li>
+        <li><a href="guidelines.html">How to Play</a></li>
+        <li><a href="login.html" class="nav-login" aria-current="page">Login</a></li>
+      </ul>
+    </nav>
 
-          <path
-            d="M21 6 L34 11 V21 C34 30 28 35 21 37 C14 35 8 30 8 21 V11 Z"
-            stroke="#c89b3c"
-            stroke-width="2"
-          />
-
-          <path
-            d="M21 26 C17 22 14 22 12 25 M21 26 C25 22 28 22 30 25"
-            stroke="#dab65e"
-            stroke-width="2"
-            stroke-linecap="round"
-          />
-
-          <circle
-            cx="21"
-            cy="16"
-            r="2.4"
-            fill="#c89b3c"
-          />
+    <div class="nav-actions">
+      <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" type="button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/>
         </svg>
-
-        <span class="brand-text">
-          <strong>Brahman Origins</strong>
-          <span>University of Batangas</span>
-        </span>
-      </a>
-
-      <nav aria-label="Primary">
-        <ul class="nav-links">
-          <li>
-            <a href="index.html">Home</a>
-          </li>
-
-          <li>
-            <a href="index.html#about">About</a>
-          </li>
-
-          <li>
-            <a href="guidelines.html">How to Play</a>
-          </li>
-
-          <li>
-            <a href="index.html#leaderboard">Leaderboard</a>
-          </li>
-
-          <li>
-            <a href="login.html" class="nav-login" aria-current="page">
-              Login
-            </a>
-          </li>
-        </ul>
-      </nav>
-
-      <div class="nav-actions">
-        <button
-          class="nav-toggle"
-          aria-label="Toggle menu"
-          aria-expanded="false"
-          type="button"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-          >
-            <path d="M4 7h16"/>
-            <path d="M4 12h16"/>
-            <path d="M4 17h16"/>
-          </svg>
-        </button>
-      </div>
-
+      </button>
     </div>
-  </header>
+  </div>
+</header>
 
 
   <!-- ================= MAIN ================= -->
@@ -116,59 +51,24 @@
 
       <div class="login-card">
 
-        <!-- Login Brand
-             This is intentionally NOT clickable. -->
-        <div class="brand">
-
-          <svg
-            class="brand-mark"
-            viewBox="0 0 42 42"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <rect
-              width="42"
-              height="42"
-              rx="10"
-              fill="#1a0509"
-            />
-
-            <path
-              d="M21 6 L34 11 V21 C34 30 28 35 21 37 C14 35 8 30 8 21 V11 Z"
-              stroke="#c89b3c"
-              stroke-width="2"
-            />
-
-            <path
-              d="M21 26 C17 22 14 22 12 25 M21 26 C25 22 28 22 30 25"
-              stroke="#dab65e"
-              stroke-width="2"
-              stroke-linecap="round"
-            />
-
-            <circle
-              cx="21"
-              cy="16"
-              r="2.4"
-              fill="#c89b3c"
-            />
-          </svg>
-
+        <!-- Login Brand -->
+        <div class="login-brand">
+          <img class="brand-mark" src="images/BRAHMMY.png" alt="Brahman Origins shield logo" width="42" height="42">
           <span class="brand-text">
             <strong>Brahman Origins</strong>
             <span>University of Batangas</span>
           </span>
-
         </div>
 
 
         <!-- Heading -->
-        <h2>Welcome back, UBian</h2>
+        <div class="login-header">
+          <h2>Welcome back, UBian</h2>
 
-        <p class="lede">
-          Continue your Brahman Origins journey.
-        </p>
+          <p class="lede">
+            Continue your Brahman Origins journey.
+          </p>
+        </div>
 
 
         <!-- ================= EMAIL LOGIN ================= -->
@@ -220,7 +120,7 @@
 
           <button
             type="submit"
-            class="btn btn-primary btn-block"
+            class="btn btn-primary btn-block login-submit"
           >
             Log In
           </button>
@@ -229,7 +129,7 @@
 
 
         <!-- ================= DIVIDER ================= -->
-        <div class="login-divider">
+        <div class="login-divider" role="separator" aria-label="or">
           <span>or</span>
         </div>
 
@@ -254,7 +154,7 @@
         <!-- ================= ACCOUNT NOTICE ================= -->
         <div class="login-domain-note">
 
-          <span aria-hidden="true">🔒</span>
+          <span class="login-note-icon" aria-hidden="true">🔒</span>
 
           <span>
             Sign in with any email address or your Google account to access
@@ -263,6 +163,18 @@
 
         </div>
 
+
+        <!-- ================= GUEST ACCESS ================= -->
+        <div style="margin-top:16px;">
+          <button
+            id="guest-btn"
+            type="button"
+            class="btn btn-outline btn-block"
+            style="width:100%;"
+          >
+            Continue as Guest
+          </button>
+        </div>
 
         <!-- ================= BOTTOM LINK ================= -->
         <p class="login-foot">
